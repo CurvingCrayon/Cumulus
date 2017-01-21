@@ -1,0 +1,130 @@
+html, body{
+	margin: 0;
+	height: 100%;
+	font-family: 'Open Sans', sans-serif;
+}
+#fileInput {
+	height: 200px;
+	width: 200px;
+	border: 2px solid black;
+}
+
+#file {
+	display: none;
+}
+
+#notifier {
+	position: fixed;
+	top: 0;
+	right: 10px;
+	box-shadow: 0 0 5px black;
+	background-color: rgba(0,0,220,0.8);
+	width: 300px;
+	height: 100px;
+}
+
+.tile {
+	width: 300px;
+	height: 100px;
+	position: relative;
+	border: 1px solid black;
+	cursor: pointer;
+	border-top-right-radius: 5px;
+}
+
+.tileBanner {
+	height: 40px;
+	background-color: rgb(244, 214, 255);
+	border-top-right-radius: inherit;
+}
+.tileThumb{
+	display: inline-block;
+	vertical-align: top;
+	padding: 10px;
+}
+.tileName{
+	margin: 0;
+	white-space: nowrap;
+}
+.nameHolder{
+	display: inline-block;
+	overflow-x: auto;
+	max-width: 80%;
+	height: 100%;
+	overflow-y: hidden;
+}
+::-webkit-scrollbar {
+    width: 12px;
+	height: 6px;
+	
+}
+ 
+::-webkit-scrollbar-track {
+	background-color: rgba(240,240,240,0.6);
+}
+ 
+::-webkit-scrollbar-thumb {
+	background-color: rgba(200,200,200,0.9);
+}
+.openIcon {
+	height: 30px;
+}
+.tab{
+	height: 200px;
+	width: 100px;
+	border: 1px solid gray;
+	border-top: none;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	position: relative;
+	box-shadow: -1px 1px 5px -1px black;
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+.tabIcon{
+	position: absolute;
+	top: 100%;
+	transform: translateY(-120%);
+	width: 75%;
+	padding-left: 12.5%;
+	margin-right: auto;
+	vertical-align: bottom;
+}
+button {
+	margin-left:auto;
+	margin-right: auto;
+}
+
+.tabButton {
+	font-size: 16px;
+}
+.fileOption{
+	display: inline-block;
+	margin-left: 20px;
+	margin-right: 20px;
+/*	border: 1px solid black;*/
+	padding: 20px;
+	vertical-align: middle;
+	text-align: center;
+	min-width: 200px;
+	cursor: pointer;
+	border-radius: 5px;
+	box-shadow: 0 0 5px solid black;
+}
+.fileOptionThumb{
+	height: 160px;
+	max-width: 160px;
+}
+.fileOptionName{
+	margin: 0;
+	word-wrap: break-word;
+	width: 160px;
+	font-size: 20px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.fileOptionName > a{
+	text-decoration: none;
+}

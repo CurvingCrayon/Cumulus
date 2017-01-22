@@ -250,11 +250,11 @@ function fileClicked(event){
 	}
 	else if(event.shiftKey){ //If the shift key was being held
 		var result = searchArray(selectedFiles, elem);
-		if(!(result == false)){
-			selectedFiles.splice(result[0],1);
+		if(!(result == false)){ //If the file has already been selected
+			selectedFiles.splice(result[0],1); //Deselect it
 		}
-		else{
-			$(elem).css(activeFileStyle());
+		else{ //If the file hasnt already been selected
+			$(elem).css(activeFileStyle()); //Select it
 		}
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		var startElem = selectedFiles[selectedFiles.length - 2][0];

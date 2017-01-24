@@ -230,28 +230,31 @@ function toggleDialog(event){
 	}
 	
 }
+//This handles file selection for Google Drive
 function fileClicked(event){
 	var elem = event.currentTarget;
-	var allFiles = $("#fileSelector").children(); //All the files currently in the 
-	if(event.ctrlKey){
+	var allFiles = $("#fileSelectorDrive").children(); //All the files currently in the file window
+	if(event.ctrlKey){ //If the control key was being held
 		var result = searchArray(selectedFiles, elem);
-		if(!result){
+		if(!result){ //If the file hadn't already been selected
+			//Select that file
 			selectedFiles.push([elem,$(elem).attr("data-id")]);
 			$(elem).css(activeFileStyle());
 		}
-		else{
+		else{//If the file had already been selected
+			//Deselect that file
 			$(selectedFiles[result[0]]).css(inactiveFileStyle());
 			var removedElem = selectedFiles.splice(result[0],1);
 			console.log(removedElem)
 		}
 	}
-	else if(event.shiftKey){
+	else if(event.shiftKey){ //If the shift key was being held
 		var result = searchArray(selectedFiles, elem);
-		if(!(result == false)){
-			selectedFiles.splice(result[0],1);
+		if(!(result == false)){ //If the file has already been selected
+			selectedFiles.splice(result[0],1); //Deselect it
 		}
-		else{
-			$(elem).css(activeFileStyle());
+		else{ //If the file hasnt already been selected
+			$(elem).css(activeFileStyle()); //Select it
 		}
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		var startElem = selectedFiles[selectedFiles.length - 2][0];
@@ -277,7 +280,11 @@ function fileClicked(event){
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		$(elem).css(activeFileStyle());
 	}
+	updateOpenFileButton(selectedFiles.length);
 //	console.log(selectedFiles);
+}
+function deselectAllFiles(){
+	
 }
 function activeFileStyle(){
 	return {

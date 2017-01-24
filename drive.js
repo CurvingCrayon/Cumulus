@@ -1,4 +1,4 @@
-
+var driveDialogOpen = false;
 // The Browser API key obtained from the Google Developers Console.
 // Replace with your own Browser API key, or your own key.
 var developerKey = 'AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0';
@@ -86,7 +86,8 @@ var request = gapi.client.drive.files.list({
 
 request.execute(function(resp) {
 	var files = resp.files;
-	if (files && files.length > 0) {
+	if (files && files.length > 0 && !driveDialogOpen) {
+		driveDialogOpen = true;
 		var fileSelector = document.createElement("DIV");
 		fileSelector.id = "fileSelectorDrive";
 		fileSelector.title = "Select File (Google Drive)";
@@ -122,12 +123,23 @@ request.execute(function(resp) {
 			fileSelector.appendChild(fileOption);
 			//createGoogleTile(file.name,file.id,file.webViewLink, file.webContentLink, file.iconLink);
 	  	}
+		
 		document.body.appendChild(fileSelector);
+		
 		$("#fileSelectorDrive").dialog({
 			"width": ($("body").width() * 0.8),
 			"height": ($("body").height() * 0.8),
+			"close": function(){
+				$(this).remove();
+				driveDialogOpen = false;
+			}
 		});
 		$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
+		var openFiles = document.createElement("BUTTON");
+		openFiles.className = "button";
+		openFiles.innerHTML = "Open File(s)"
+		openFiles.id = "driveOpenFiles";
+		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
 		$(".tile").dialog({
 			width: 100
 		});
@@ -167,3 +179,7 @@ function createGoogleTile(name,id,viewLink,editLink, iconSrc){
     setCallback(pickerCallback).
     build();
 picker.setVisible(true);*/
+function updateOpenFileButton(numFiles){
+	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
+	
+}

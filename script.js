@@ -280,6 +280,7 @@ function fileClicked(event){
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		$(elem).css(activeFileStyle());
 	}
+	updateOpenFileButton(selectedFiles.length);
 //	console.log(selectedFiles);
 }
 function deselectAllFiles(){

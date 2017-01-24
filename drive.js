@@ -123,7 +123,9 @@ request.execute(function(resp) {
 			fileSelector.appendChild(fileOption);
 			//createGoogleTile(file.name,file.id,file.webViewLink, file.webContentLink, file.iconLink);
 	  	}
+		
 		document.body.appendChild(fileSelector);
+		
 		$("#fileSelectorDrive").dialog({
 			"width": ($("body").width() * 0.8),
 			"height": ($("body").height() * 0.8),
@@ -133,6 +135,11 @@ request.execute(function(resp) {
 			}
 		});
 		$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
+		var openFiles = document.createElement("BUTTON");
+		openFiles.className = "button";
+		openFiles.innerHTML = "Open File(s)"
+		openFiles.id = "driveOpenFiles";
+		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
 		$(".tile").dialog({
 			width: 100
 		});
@@ -172,3 +179,7 @@ function createGoogleTile(name,id,viewLink,editLink, iconSrc){
     setCallback(pickerCallback).
     build();
 picker.setVisible(true);*/
+function updateOpenFileButton(numFiles){
+	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
+	
+}

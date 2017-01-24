@@ -128,3 +128,9 @@ button {
 .fileOptionName > a{
 	text-decoration: none;
 }
+#driveOpenFiles{
+	/*position: absolute;
+	left: 20px;
+	top: 20px;*/
+	margin-left: 20px;
+}

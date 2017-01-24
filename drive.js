@@ -128,6 +128,7 @@ request.execute(function(resp) {
 			"width": ($("body").width() * 0.8),
 			"height": ($("body").height() * 0.8),
 			"close": function(){
+				$(this).remove();
 				driveDialogOpen = false;
 			}
 		});

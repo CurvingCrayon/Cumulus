@@ -2,7 +2,7 @@ var tabSpeed = "fast";
 var tabOffset= "-100px";
 var mainColor = "#FFCC00";
 var semiMainColor = "rgba(255,204,0,0.3)";
-var selectedFiles = [[false,false]]; //2d array with [DOM element, file id]
+var selectedFiles = []; //2d array with [DOM element, file id]
 $(function(){
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object

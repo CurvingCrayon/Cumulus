@@ -12,6 +12,8 @@ var appId = "905474582382";
 // Scope to use to access user's Drive items.
 var SCOPES = ['https://www.googleapis.com/auth/drive'];
 
+var driveLoadTime = 50;
+
 /**
 * Check if current user has authorized this application.
 */
@@ -91,6 +93,7 @@ request.execute(function(resp) {
 		var fileSelector = document.createElement("DIV");
 		fileSelector.id = "fileSelectorDrive";
 		fileSelector.title = "Select File (Google Drive)";
+		var fileOptions = [];
 		for (var i = 0; i < files.length; i++) {
 			var file = files[i];
 			var fileOption = document.createElement("DIV");
@@ -119,12 +122,23 @@ request.execute(function(resp) {
 
 			fileOption.appendChild(fileThumb);
 			fileOption.appendChild(fileName);
-
-			fileSelector.appendChild(fileOption);
-			//createGoogleTile(file.name,file.id,file.webViewLink, file.webContentLink, file.iconLink);
+			
+			fileOptions.push(fileOption);
 	  	}
 		
 		document.body.appendChild(fileSelector);
+		var counter = 0;
+		console.log(fileOptions)
+		var intervalTicket = setInterval(function(){
+			if(counter < fileOptions.length){
+				$("#fileSelectorDrive").append(fileOptions[counter]);
+				counter++;
+			}
+			else{
+				clearInterval(intervalTicket);
+			}
+		},driveLoadTime);
+		
 		
 		$("#fileSelectorDrive").dialog({
 			"width": ($("body").width() * 0.8),

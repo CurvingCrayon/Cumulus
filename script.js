@@ -233,7 +233,7 @@ function toggleDialog(event){
 //This handles file selection for Google Drive
 function fileClicked(event){
 	var elem = event.currentTarget;
-	var allFiles = $("#fileSelector").children(); //All the files currently in the file window
+	var allFiles = $("#fileSelectorDrive").children(); //All the files currently in the file window
 	if(event.ctrlKey){ //If the control key was being held
 		var result = searchArray(selectedFiles, elem);
 		if(!result){ //If the file hadn't already been selected

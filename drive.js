@@ -12,7 +12,7 @@ var appId = "905474582382";
 // Scope to use to access user's Drive items.
 var SCOPES = ['https://www.googleapis.com/auth/drive'];
 
-var driveLoadTime = 50;
+var driveLoadTime = 2000;
 
 /**
 * Check if current user has authorized this application.
@@ -95,74 +95,120 @@ request.execute(function(resp) {
 		fileSelector.title = "Select File (Google Drive)";
 		var fileOptions = [];
 		for (var i = 0; i < files.length; i++) {
-			var file = files[i];
-			var fileOption = document.createElement("DIV");
-			fileOption.setAttribute("data-id",file.id);
-			fileOption.setAttribute("data-parents",file.parents.join(","));
-			fileOption.className = "fileOption";
-
-			var fileThumb = document.createElement("IMG");
-			fileThumb.className = "fileOptionThumb";
-			if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
-				fileThumb.src = file.thumbnailLink;
-			}
-			else{
-				switch(file.mimeType){
-					case "application/vnd.google-apps.folder":
-						fileThumb.src = "images/folder.png";
-						fileOption.className += " fileOptionFolder";
-					break;
-				}
-			}
-			fileThumb.alt = file.name;
-
-			var fileName = document.createElement("H2");
-			fileName.className = "fileOptionName";
-			fileName.innerHTML = file.name;
-
-			fileOption.appendChild(fileThumb);
-			fileOption.appendChild(fileName);
 			
-			fileOptions.push(fileOption);
 	  	}
 		
 		document.body.appendChild(fileSelector);
-		var counter = 0;
-		console.log(fileOptions)
-		var intervalTicket = setInterval(function(){
-			if(counter < fileOptions.length){
-				$("#fileSelectorDrive").append(fileOptions[counter]);
-				counter++;
-			}
-			else{
-				clearInterval(intervalTicket);
-			}
-		},driveLoadTime);
 		
-		
+		//Style fileSelector
 		$("#fileSelectorDrive").dialog({
-			"width": ($("body").width() * 0.8),
-			"height": ($("body").height() * 0.8),
-			"close": function(){
-				$(this).remove();
-				driveDialogOpen = false;
-			}
+		"width": ($("body").width() * 0.8),
+		"height": ($("body").height() * 0.8),
+		"close": function(){
+			$(this).remove();
+			driveDialogOpen = false;
+		}
 		});
 		$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
 		var openFiles = document.createElement("BUTTON");
 		openFiles.className = "button";
 		openFiles.innerHTML = "Open File(s)"
-		openFiles.id = "driveOpenFiles";
-		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
-		$(".tile").dialog({
-			width: 100
-		});
-		$(".fileOption").on("click",fileClicked);
-		$(".fileOptionFolder").on("dblclick",openFolder);
+		openFiles.id = "driveOpenFiles";	document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
 		$(".ui-dialog-titlebar").on({
 			"dblclick": toggleDialog
 		});
 		$( "button" ).button();
+		
+		//Start loading options
+		var counter = 0;
+		var intervalTicket = setInterval(function(){
+			if(counter < files.length){
+				var file = files[counter];
+				//Preload any folders
+				var folder = true;
+				while(folder && counter < files.length){
+					file = files[counter];
+					if(file.mimeType === "application/vnd.google-apps.folder"){
+						console.log("folder found");
+						var fileOption = document.createElement("DIV");
+						fileOption.setAttribute("data-id",file.id);
+						fileOption.setAttribute("data-parents",file.parents.join(","));
+						fileOption.className = "fileOption";
+
+						var fileThumb = document.createElement("IMG");
+						fileThumb.className = "fileOptionThumb";
+						if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
+							fileThumb.src = file.thumbnailLink;
+						}
+						else{
+							switch(file.mimeType){
+								case "application/vnd.google-apps.folder":
+									fileThumb.src = "images/folder.png";
+									fileOption.className += " fileOptionFolder";
+								break;
+							}
+						}
+						fileThumb.alt = file.name;
+
+						var fileName = document.createElement("H2");
+						fileName.className = "fileOptionName";
+						fileName.innerHTML = file.name;
+						fileOption.onclick = fileClicked;
+						fileOption.ondblclickclick = openFolder;
+						fileOption.appendChild(fileThumb);
+						fileOption.appendChild(fileName);
+						$("#fileSelectorDrive").append(fileOption);
+						
+						counter++;
+					}
+					else{
+						folder = false;
+					}
+				}
+				if(counter < files.length){
+					file = files[counter];
+					var fileOption = document.createElement("DIV");
+					fileOption.setAttribute("data-id",file.id);
+					fileOption.setAttribute("data-parents",file.parents.join(","));
+					fileOption.className = "fileOption";
+
+					var fileThumb = document.createElement("IMG");
+					fileThumb.className = "fileOptionThumb";
+					if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
+						fileThumb.src = file.thumbnailLink;
+					}
+					else{
+						switch(file.mimeType){
+							case "application/vnd.google-apps.folder":
+								fileThumb.src = "images/folder.png";
+								fileOption.className += "fileOptionFolder";
+							break;
+						}
+					}
+					fileThumb.alt = file.name;
+
+					var fileName = document.createElement("H2");
+					fileName.className = "fileOptionName";
+					fileName.innerHTML = file.name;
+					
+					fileOption.onclick = fileClicked;
+					fileOption.ondblclickclick = openFolder;
+					fileOption.appendChild(fileThumb);
+					fileOption.appendChild(fileName);
+					$("#fileSelectorDrive").append(fileOption);
+					//$("body").data("id").on("click",fileClicked);
+					//$("body").data("id").on("dblclick",openFolder);
+
+					counter++;
+				}
+				else{
+					clearInterval(intervalTicket);
+				}
+			}
+			else{
+				clearInterval(intervalTicket);
+			}
+		},driveLoadTime);
 	}
   });
 }

@@ -245,7 +245,7 @@ function fileClicked(event){
 			//Deselect that file
 			$(selectedFiles[result[0]]).css(inactiveFileStyle());
 			var removedElem = selectedFiles.splice(result[0],1);
-			console.log(removedElem)
+
 		}
 	}
 	else if(event.shiftKey){ //If the shift key was being held

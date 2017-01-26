@@ -13,7 +13,6 @@ function createTile(name,type,contentLink,service){
 	tile.appendChild(contentHolder);
 	var icon = document.createElement("IMG");
 	icon.className = "fileIcon";
-	icon.style.float = "left";
 	switch(service){
 		case "googledrive":
 			icon.src = "../images/product16.png";

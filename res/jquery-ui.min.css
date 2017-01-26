@@ -10,8 +10,19 @@
     height: 16px; 
 }
 
-.ui-button.ui-state-hover .ui-icon.google-drive-icon{
+.ui-button .ui-state-hover .ui-icon.google-drive-icon{
     background-image: url("../images/product16.png");
+	opacity: 0.8;
+    width: 16px;
+    height: 16px;
+}
+.ui-button .ui-icon.dropbox-icon {
+    background-image: url("../images/drop16.png");
+    width: 16px;
+    height: 16px; 
+}
+.ui-button .ui-state-hover .ui-icon.dropbox-icon{
+    background-image: url("../images/drop16.png");
 	opacity: 0.8;
     width: 16px;
     height: 16px;

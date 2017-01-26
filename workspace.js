@@ -11,4 +11,20 @@ function createTile(name,type,contentLink,service){
 	contentFrame.src = contentLink;
 	contentHolder.appendChild(contentFrame);
 	tile.appendChild(contentHolder);
+	var icon = document.createElement("IMG");
+	icon.className = "fileIcon";
+	icon.style.float = "left";
+	switch(service){
+		case "googledrive":
+			icon.src = "../images/product16.png";
+		break;
+			
+		case "dropbox":
+			icon.src = "../images/drop16.png";
+		break;
+			
+		case "onedrive":
+		break;
+	}
+	contentHolder.parentElement.parentElement.children[0].insertBefore(icon,contentHolder.parentElement.parentElement.children[0].children[0]);
 }

@@ -30,6 +30,17 @@ function createTile(name,type,contentLink,service){
 		break;
 	}
 	contentHolder.parentNode.parentNode.children[0].insertBefore(icon,contentHolder.parentNode.parentNode.children[0].children[0]);
+	var bgImg = "";
+	switch(type){
+		case "doc":
+		case "docx":
+			bgImg = "../images/docBg.png";
+		break;
+	}
+	contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
+	$(contentHolder.parentElement.parentElement.children[0]).on({
+		"dblclick": toggleDialog
+	});
 }
 function menu(event){
 	targ = event.target;
@@ -73,4 +84,5 @@ function checkClick(event){
 			$("#"+menuIds[menuNum]).hide();
 		}
 	}
+
 }

@@ -1,30 +1,18 @@
 function getDropOptions(){
 	return {
- 
-    // Required. Called when a user selects an item in the Chooser.
-    success: displayDropboxFiles,
+		success: displayDropboxFiles,
+		cancel: function() {
 
-    // Optional. Called when the user closes the dialog without selecting a file
-    // and does not include any parameters.
-    cancel: function() {
-
-    },
-
-    // Optional. "preview" (default) is a preview link to the document for sharing,
-    // "direct" is an expiring link to download the contents of the file. For more
-    // information about link types, see Link types below.
-    linkType: "preview", // or "direct"
-
-    // Optional. A value of false (default) limits selection to a single file, while
-    // true enables multiple file selection.
-    multiselect: true, // or true
-
-    // Optional. This is a list of file extensions. If specified, the user will
-    // only be able to select files with these extensions. You may also specify
-    // file types, such as "video" or "images" in the list. For more information,
-    // see File types below. By default, all extensions are allowed.
+		},
+		linkType: "preview", // "preview" or "direct"
+		multiselect: true,
 	}
 } 
 function displayDropboxFiles(files){
-	console.log(files[0].link)
+	for(var fileIndex in files){ //Go through all the files selected by the user
+		var fileName = files[fileIndex].name.split(".")[0];
+		var fileType = files[fileIndex].name.split(".")[1];
+		createTile(fileName,fileType,files[fileIndex].link,"dropbox");
+		console.log(files[fileIndex].thumbnailLink);
+	}
 }

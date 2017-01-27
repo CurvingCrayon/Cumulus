@@ -31,15 +31,20 @@
 
 	
 </head>
-<body>
-<!--
-	<div id="fileSelectorDrive" title="Select File">
-		<div class="fileOption"></div>
-		<div class="fileOption"></div>
-		<div class="fileOption"></div>
-		<div class="fileOption"></div>
-	</div>
--->
+<body oncontextmenu="menu(event);" onclick="checkClick(event);">
+	<ul id="driveFileMenu">
+		<li onclick="confirmDelete(deleteFileOption);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
+		<li><div>Selection Options</div><ul>
+			<li><div>Select all</div></li>
+			<li><div>Select all but this</div></li>
+		</ul></li>
+		<li><div>Hierarchy Options</div><ul>
+			<li><div><span class="ui-icon ui-icon-arrowthick-1-n"></span>Go up a level</div></li>
+			<li><div><span class="ui-icon ui-icon-arrowthickstop-1-n"></span>Go to root folder</div></li>
+		</ul></li>
+	  	<li><div>Learn more about this menu</div></li>
+	</ul>
+
 	<div id="tabHolder">
 		<!-- GOOGLE DRIVE TAB -->
         <div class="tab" data-open="false">

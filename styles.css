@@ -150,3 +150,16 @@ button {
 	margin-top: 5px;
 	margin-left: -4px;
 }
+#driveFileMenu{
+	width:200px;
+	background-color: white;
+	position: absolute;
+	z-index: 999;
+}
+.ui-menu{
+	width: 200px;
+}
+#deleteDialogIcon{
+	float: left;
+	margin: 12px 12px 20px 0;
+}

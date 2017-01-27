@@ -6,6 +6,8 @@ var selectedFiles = []; //2d array with [DOM element, file id]
 $(function(){
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object
+	$("#driveFileMenu").menu();
+	$("#driveFileMenu").hide();
 	$("#fileSelector").dialog({ //Defines ID as jquery UI object
 		"width": ($("body").width() * 0.8),
 		"height": ($("body").height() * 0.8),
@@ -206,7 +208,7 @@ function toggleTab(event){
 	}
 }
 function toggleDialog(event){
-	var elem = event.currentTarget.parentElement.children[1];
+	var elem = event.currentTarget.parentNode.children[1];
 	var prevHeight = elem.getAttribute("data-height");
 	if(prevHeight == null){
 		elem.setAttribute("data-height",$(elem).height());
@@ -222,7 +224,7 @@ function toggleDialog(event){
 		}
 		else{
 			elem.setAttribute("data-height",$(elem).height());
-			elem.parentElement.style.height="auto";
+			elem.parentNode.style.height="auto";
 			$(elem).animate({
 				"height": "0px"
 			});

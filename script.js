@@ -16,9 +16,6 @@ $(function(){
 		"mouseenter":toggleTab,
 		"mouseleave":toggleTab
 	});
-	$(".ui-dialog-titlebar").on({
-		"dblclick": toggleDialog
-	});
 	$(document).tooltip({
 		items: "[data-tooltip]",
 		content: function(){
@@ -211,7 +208,8 @@ function toggleDialog(event){
 	if(prevHeight == null){
 		elem.setAttribute("data-height",$(elem).height());
 		$(elem).animate({
-			"height": "0px"
+			"height": "0px",
+			"min-height": "0px"
 		});
 	}
 	else{
@@ -224,7 +222,8 @@ function toggleDialog(event){
 			elem.setAttribute("data-height",$(elem).height());
 			elem.parentElement.style.height="auto";
 			$(elem).animate({
-				"height": "0px"
+				"height": "0px",
+				"min-height": "0px"
 			});
 		}
 	}

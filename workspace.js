@@ -27,4 +27,15 @@ function createTile(name,type,contentLink,service){
 		break;
 	}
 	contentHolder.parentElement.parentElement.children[0].insertBefore(icon,contentHolder.parentElement.parentElement.children[0].children[0]);
+	var bgImg = "";
+	switch(type){
+		case "doc":
+		case "docx":
+			bgImg = "../images/docBg.png";
+		break;
+	}
+	contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
+	$(contentHolder.parentElement.parentElement.children[0]).on({
+		"dblclick": toggleDialog
+	});
 }

@@ -113,8 +113,10 @@ request.execute(function(resp) {
 		var openFiles = document.createElement("BUTTON");
 		openFiles.className = "button";
 		openFiles.innerHTML = "Open File(s)"
-		openFiles.id = "driveOpenFiles";	document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
-		$(".ui-dialog-titlebar").on({
+		openFiles.id = "driveOpenFiles";
+		openFiles.onclick = openSelectedFiles;
+		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
+		$(document.getElementById("fileSelectorDrive").parentElement.children[0]).on({
 			"dblclick": toggleDialog
 		});
 		$( "button" ).button();
@@ -132,7 +134,9 @@ request.execute(function(resp) {
 						console.log("folder found");
 						var fileOption = document.createElement("DIV");
 						fileOption.setAttribute("data-id",file.id);
+						fileOption.setAttribute("data-name",file.name);
 						fileOption.setAttribute("data-parents",file.parents.join(","));
+						fileOption.setAttribute("data-mimetype",file.mimeType);
 						fileOption.className = "fileOption";
 
 						var fileThumb = document.createElement("IMG");
@@ -154,7 +158,7 @@ request.execute(function(resp) {
 						fileName.className = "fileOptionName";
 						fileName.innerHTML = file.name;
 						fileOption.onclick = fileClicked;
-						fileOption.ondblclickclick = openFolder;
+						fileOption.ondblclick = openFolder;
 						fileOption.appendChild(fileThumb);
 						fileOption.appendChild(fileName);
 						$("#fileSelectorDrive").append(fileOption);
@@ -169,7 +173,9 @@ request.execute(function(resp) {
 					file = files[counter];
 					var fileOption = document.createElement("DIV");
 					fileOption.setAttribute("data-id",file.id);
+					fileOption.setAttribute("data-name",file.name);
 					fileOption.setAttribute("data-parents",file.parents.join(","));
+					fileOption.setAttribute("data-mimetype",file.mimeType);
 					fileOption.className = "fileOption";
 
 					var fileThumb = document.createElement("IMG");
@@ -192,7 +198,7 @@ request.execute(function(resp) {
 					fileName.innerHTML = file.name;
 					
 					fileOption.onclick = fileClicked;
-					fileOption.ondblclickclick = openFolder;
+					fileOption.ondblclick = openFolder;
 					fileOption.appendChild(fileThumb);
 					fileOption.appendChild(fileName);
 					$("#fileSelectorDrive").append(fileOption);
@@ -223,7 +229,7 @@ function initDrive(){
 	
 }
 
-function createGoogleTile(name,id,viewLink,editLink, iconSrc){
+function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
 	var newTile = document.createElement("DIV");
 	newTile.className = "tile";
 	newTile.setAttribute("title",name)
@@ -242,4 +248,18 @@ picker.setVisible(true);*/
 function updateOpenFileButton(numFiles){
 	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
 	
+}
+function openSelectedFiles(){
+	selectedFiles;
+	for(var fileNum in selectedFiles){
+		var request = gapi.client.drive.files.get({
+			"fileId" : selectedFiles[fileNum].getAttribute("data-id"),
+			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
+		});
+		request.execute(function(resp){
+			var name = selectedFiles[fileNum].getAttribute("data-name").split(".")[0];
+			var fileType = selectedFiles[fileNum].getAttribute("data-name").split(".")[1];
+			creatTile(name,fileType);
+		});
+	}
 }

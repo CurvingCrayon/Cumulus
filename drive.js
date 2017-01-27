@@ -116,8 +116,8 @@ request.execute(function(resp) {
 		openFiles.innerHTML = "Open File(s)"
 		openFiles.id = "driveOpenFiles";
 		openFiles.onclick = openSelectedFiles;
-		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
-		$(document.getElementById("fileSelectorDrive").parentElement.children[0]).on({
+		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
+		$(".ui-dialog-titlebar").on({
 			"dblclick": toggleDialog
 		});
 		$( "button" ).button();
@@ -248,6 +248,44 @@ picker.setVisible(true);*/
 function updateOpenFileButton(numFiles){
 	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
 	
+}
+function confirmDelete(callback){
+	var fileName = menuTarget.getAttribute("data-name");
+	var newDialog = document.createElement("DIV");
+	newDialog.id = "deleteDialog";
+	newDialog.title = "Delete file?"
+	var dialogText = document.createElement("P");
+	var dialogIcon = document.createElement("SPAN");
+	dialogIcon.className ="ui-icon ui-icon-alert";
+	dialogIcon.id = "deleteDialogIcon";
+	dialogText.appendChild(dialogIcon);
+	dialogText.innerHTML += "Are you sure you want to delete the file \""+fileName+"\"?";
+	newDialog.appendChild(dialogText);
+	document.body.appendChild(newDialog);
+	$(newDialog).dialog({
+		resizable: false,
+	  	height: "auto",
+	  	width: 400,
+	  	modal: true,
+	  	buttons: {
+			"Delete": function() {
+				callback();
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+}
+function deleteFileOption(){
+	var fileId = menuTarget.getAttribute("data-id");
+	var request = gapi.client.drive.files.delete({
+		"fileId": fileId
+	});
+	request.execute(function(resp){
+		console.log(resp);
+	});
 }
 function openSelectedFiles(){
 	selectedFiles;

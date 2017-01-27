@@ -80,6 +80,7 @@ var request = gapi.client.drive.files.list({
 	//"pageSize": 10,
 	"corpus": "user",
 	"spaces": "drive",
+	"quotaUser": createString(5),
 	"q": "'root' in parents", //Search query
 	"orderBy": "name",
 	"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
@@ -131,7 +132,6 @@ request.execute(function(resp) {
 				while(folder && counter < files.length){
 					file = files[counter];
 					if(file.mimeType === "application/vnd.google-apps.folder"){
-						console.log("folder found");
 						var fileOption = document.createElement("DIV");
 						fileOption.setAttribute("data-id",file.id);
 						fileOption.setAttribute("data-name",file.name);
@@ -253,13 +253,28 @@ function openSelectedFiles(){
 	selectedFiles;
 	for(var fileNum in selectedFiles){
 		var request = gapi.client.drive.files.get({
-			"fileId" : selectedFiles[fileNum].getAttribute("data-id"),
+			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
 			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
 		});
 		request.execute(function(resp){
-			var name = selectedFiles[fileNum].getAttribute("data-name").split(".")[0];
-			var fileType = selectedFiles[fileNum].getAttribute("data-name").split(".")[1];
-			creatTile(name,fileType);
+			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
+			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
+			if(resp.thumbnailLink == undefined){
+				createTile(name,fileType,resp.webViewLink,"googledrive");
+			}
+			else{
+				createTile(name,fileType,resp.thumbnailLink,"googledrive");
+			}
+			
 		});
 	}
+}
+function createString(length){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for(var i = 0; i < length; i++){
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+    return text;
 }

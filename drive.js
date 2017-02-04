@@ -117,6 +117,18 @@ request.execute(function(resp) {
 		openFiles.id = "driveOpenFiles";
 		openFiles.onclick = openSelectedFiles;
 		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
+		var fileNames = []; //Used for search bar suggestions
+		var searchBar = document.createElement("INPUT");
+		searchBar.type = "text";
+		searchBar.id = "fileSearchBar";
+		searchBar.placeholder = "Search for file..."
+		$(searchBar).on("click",function(){
+			$(this).focus();
+		});
+		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(searchBar);
+		$("#fileSearchBar").autocomplete({
+			"source": fileNames
+		});
 		$(".ui-dialog-titlebar").on({
 			"dblclick": toggleDialog
 		});
@@ -124,6 +136,7 @@ request.execute(function(resp) {
 		
 		//Start loading options
 		var counter = 0;
+		
 		var intervalTicket = setInterval(function(){
 			if(counter < files.length){
 				var file = files[counter];
@@ -135,6 +148,7 @@ request.execute(function(resp) {
 						var fileOption = document.createElement("DIV");
 						fileOption.setAttribute("data-id",file.id);
 						fileOption.setAttribute("data-name",file.name);
+						fileNames.push(file.name); //Used for search bar suggestions
 						fileOption.setAttribute("data-parents",file.parents.join(","));
 						fileOption.setAttribute("data-mimetype",file.mimeType);
 						fileOption.className = "fileOption";
@@ -174,6 +188,8 @@ request.execute(function(resp) {
 					var fileOption = document.createElement("DIV");
 					fileOption.setAttribute("data-id",file.id);
 					fileOption.setAttribute("data-name",file.name);
+					fileNames.push(file.name); //Used for search bar suggestions
+
 					fileOption.setAttribute("data-parents",file.parents.join(","));
 					fileOption.setAttribute("data-mimetype",file.mimeType);
 					fileOption.className = "fileOption";
@@ -246,7 +262,7 @@ function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
     build();
 picker.setVisible(true);*/
 function updateOpenFileButton(numFiles){
-	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
+	document.getElementById("driveOpenFiles").innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
 	
 }
 function confirmDelete(callback){

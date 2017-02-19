@@ -318,3 +318,8 @@ function searchArray(arr, obj){
 function openFolder(event){
 	console.log(event.currentTarget.getAttribute("data-id"));
 }
+function denyEvent(event){
+	event.stopPropagation();
+	event.preventDefault();
+	return false;
+}

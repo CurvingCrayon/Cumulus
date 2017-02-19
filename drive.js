@@ -12,12 +12,23 @@ var appId = "905474582382";
 // Scope to use to access user's Drive items.
 var SCOPES = ['https://www.googleapis.com/auth/drive'];
 
-var driveLoadTime = 2000;
+var driveLoadTime = 1;
 
-/**
-* Check if current user has authorized this application.
-*/
-//Test comment
+var currentLevel = "root";
+
+var fileNames = []; //Used for search bar suggestions
+
+var standardRequest = {
+	//"pageSize": 10,
+	"corpus": "user",
+	"spaces": "drive",
+	"quotaUser": createString(5),
+	"q": "'root' in parents", //Search query
+	"orderBy": "name",
+	"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
+	//Others include: webViewLink, webContentLink, nextPageToken
+ }
+
 function checkAuth() {
 	console.log("checking auth...");
 gapi.auth.authorize(
@@ -29,11 +40,7 @@ gapi.auth.authorize(
   }, handleAuthResult);
 }
 
-/**
-* Handle response from authorization server.
-*
-* @param {Object} authResult Authorization result.
-*/
+
 function handleAuthResult(authResult) {
 	console.log(authResult);
 if (authResult && !authResult.error) {
@@ -50,11 +57,6 @@ if (authResult && !authResult.error) {
 }
 }
 
-/**
-* Initiate auth flow in response to user clicking authorize button.
-*
-* @param {Event} event Button click event.
-*/
 function handleAuthClick(event) {
 	gapi.auth.authorize({
 		client_id: CLIENT_ID, 
@@ -65,79 +67,145 @@ function handleAuthClick(event) {
 	return false;
 }
 
-/**
-* Load Drive API client library.
-*/
+
 function loadDriveApi() {
 	gapi.client.load('drive', 'v3', initDrive);
 }
 
-/**
-* Print files.
-*/
 function previewDriveFiles() {
-var request = gapi.client.drive.files.list({
-	//"pageSize": 10,
-	"corpus": "user",
-	"spaces": "drive",
-	"quotaUser": createString(5),
-	"q": "'root' in parents", //Search query
-	"orderBy": "name",
-	"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
-	//Others include: webViewLink, webContentLink, nextPageToken
-  });
+	if(!driveDialogOpen){
+		openDialog();
+	}
+	loadFileSelections(standardRequest);
+}
+function searchFile(query){
+	if(driveDialogOpen){
+		var request = gapi.client.drive.files.list({
+			//"pageSize": 10,
+			"corpus": "user",
+			"spaces": "drive",
+			"quotaUser": createString(5),
+			"q": "'root' in parents and name contains '" + query + "'", //Search query
+			"orderBy": "name",
+			"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
+			//Others include: webViewLink, webContentLink, nextPageToken
+		});
+		clearFileSelections();
+		loadFileSelections(request);
+	}
+	else{
+		console.error("searchFile() called whilst dialog is closed");
+	}
+	
+}
+function refreshFiles(){
+	
+}
+function initDrive(){
+	
+}
 
-request.execute(function(resp) {
-	var files = resp.files;
-	if (files && files.length > 0 && !driveDialogOpen) {
-		driveDialogOpen = true;
-		var fileSelector = document.createElement("DIV");
-		fileSelector.id = "fileSelectorDrive";
-		fileSelector.title = "Select File (Google Drive)";
-		var fileOptions = [];
-		for (var i = 0; i < files.length; i++) {
-			
-	  	}
-		
-		document.body.appendChild(fileSelector);
-		
-		//Style fileSelector
-		$("#fileSelectorDrive").dialog({
-		"width": ($("body").width() * 0.8),
-		"height": ($("body").height() * 0.8),
-		"close": function(){
-			$(this).remove();
-			driveDialogOpen = false;
+function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
+	var newTile = document.createElement("DIV");
+	newTile.className = "tile";
+	newTile.setAttribute("title",name)
+	var openButton = document.createElement("BUTTON");
+	openButton.className = "openFileButton";
+	openButton.innerHTML = "<a href='"+editLink+"' target='_blank' >View File</a>";
+	newTile.appendChild(openButton);
+	document.body.appendChild(newTile);
+	console.info("tile created");
+}
+
+function updateOpenFileButton(numFiles){
+	document.getElementById("driveOpenFiles").innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
+	
+}
+function confirmDelete(callback){
+	var fileName = menuTarget.getAttribute("data-name");
+	var newDialog = document.createElement("DIV");
+	newDialog.id = "deleteDialog";
+	newDialog.title = "Delete file?"
+	var dialogText = document.createElement("P");
+	var dialogIcon = document.createElement("SPAN");
+	dialogIcon.className ="ui-icon ui-icon-alert";
+	dialogIcon.id = "deleteDialogIcon";
+	dialogText.appendChild(dialogIcon);
+	dialogText.innerHTML += "Are you sure you want to delete the file \""+fileName+"\"?";
+	newDialog.appendChild(dialogText);
+	document.body.appendChild(newDialog);
+	$(newDialog).dialog({
+		resizable: false,
+	  	height: "auto",
+	  	width: 400,
+	  	modal: true,
+	  	buttons: {
+			"Delete": function() {
+				callback();
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
 		}
+	});
+}
+function deleteFile(){
+	var fileId = menuTarget.getAttribute("data-id");
+	var request = gapi.client.drive.files.delete({
+		"fileId": fileId
+	});
+	request.execute(function(resp){
+		console.log(resp);
+	});
+}
+function openSelectedFiles(){
+	selectedFiles;
+	for(var fileNum in selectedFiles){
+		var request = gapi.client.drive.files.get({
+			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
+			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
 		});
-		$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
-		var openFiles = document.createElement("BUTTON");
-		openFiles.className = "button";
-		openFiles.innerHTML = "Open File(s)"
-		openFiles.id = "driveOpenFiles";
-		openFiles.onclick = openSelectedFiles;
-		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
-		var fileNames = []; //Used for search bar suggestions
-		var searchBar = document.createElement("INPUT");
-		searchBar.type = "text";
-		searchBar.id = "fileSearchBar";
-		searchBar.placeholder = "Search for file..."
-		$(searchBar).on("click",function(){
-			$(this).focus();
+		request.execute(function(resp){
+			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
+			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
+			if(resp.thumbnailLink == undefined){
+				createTile(name,fileType,resp.webViewLink,"googledrive");
+			}
+			else{
+				createTile(name,fileType,resp.thumbnailLink,"googledrive");
+			}
+			
 		});
-		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(searchBar);
-		$("#fileSearchBar").autocomplete({
-			"source": fileNames
-		});
-		$(".ui-dialog-titlebar").on({
-			"dblclick": toggleDialog
-		});
-		$( "button" ).button();
+	}
+}
+function createString(length){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for(var i = 0; i < length; i++){
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+    return text;
+}
+function checkEnter(event){
+	if(event.keyCode == 13 || event.which == 13){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+function loadFileSelections(req){
+	var request = gapi.client.drive.files.list(req);
+
+	request.execute(function(resp) {
+		var files = resp.files;
+		if (files && files.length > 0 && driveDialogOpen) {
+			//Start loading options
+			var counter = 0;
 		
-		//Start loading options
-		var counter = 0;
-		
-		var intervalTicket = setInterval(function(){
+			var intervalTicket = setInterval(function(){
 			if(counter < files.length){
 				var file = files[counter];
 				//Preload any folders
@@ -149,7 +217,12 @@ request.execute(function(resp) {
 						fileOption.setAttribute("data-id",file.id);
 						fileOption.setAttribute("data-name",file.name);
 						fileNames.push(file.name); //Used for search bar suggestions
-						fileOption.setAttribute("data-parents",file.parents.join(","));
+						if(file.parents != undefined){
+							fileOption.setAttribute("data-parents",file.parents.join(","));
+						}
+						else{
+							fileOption.setAttribute("data-parents","");
+						}
 						fileOption.setAttribute("data-mimetype",file.mimeType);
 						fileOption.className = "fileOption";
 
@@ -189,8 +262,13 @@ request.execute(function(resp) {
 					fileOption.setAttribute("data-id",file.id);
 					fileOption.setAttribute("data-name",file.name);
 					fileNames.push(file.name); //Used for search bar suggestions
-
-					fileOption.setAttribute("data-parents",file.parents.join(","));
+					if(file.parents != undefined){
+						fileOption.setAttribute("data-parents",file.parents.join(","));
+					}
+					else{
+						fileOption.setAttribute("data-parents","");
+					}
+					
 					fileOption.setAttribute("data-mimetype",file.mimeType);
 					fileOption.className = "fileOption";
 
@@ -232,103 +310,60 @@ request.execute(function(resp) {
 			}
 		},driveLoadTime);
 	}
-  });
+	});
 }
+function openDialog(){
+	driveDialogOpen = true;
+	var fileSelector = document.createElement("DIV");
+	fileSelector.id = "fileSelectorDrive";
+	fileSelector.title = "Select File (Google Drive)";
+	var fileOptions = [];
 
-/**
-* Append a pre element to the body containing the given message
-* as its text node.
-*
-* @param {string} message Text to be placed in pre element.
-*/
-function initDrive(){
-	
-}
+	document.body.appendChild(fileSelector);
 
-function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
-	var newTile = document.createElement("DIV");
-	newTile.className = "tile";
-	newTile.setAttribute("title",name)
-	var openButton = document.createElement("BUTTON");
-	openButton.className = "openFileButton";
-	openButton.innerHTML = "<a href='"+editLink+"' target='_blank' >View File</a>";
-	newTile.appendChild(openButton);
-	document.body.appendChild(newTile);
-	console.info("tile created");
-}
-/*var picker = new google.picker.PickerBuilder().
-    addView(google.picker.ViewId.IMAGE_SEARCH).
-    setCallback(pickerCallback).
-    build();
-picker.setVisible(true);*/
-function updateOpenFileButton(numFiles){
-	document.getElementById("driveOpenFiles").innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
-	
-}
-function confirmDelete(callback){
-	var fileName = menuTarget.getAttribute("data-name");
-	var newDialog = document.createElement("DIV");
-	newDialog.id = "deleteDialog";
-	newDialog.title = "Delete file?"
-	var dialogText = document.createElement("P");
-	var dialogIcon = document.createElement("SPAN");
-	dialogIcon.className ="ui-icon ui-icon-alert";
-	dialogIcon.id = "deleteDialogIcon";
-	dialogText.appendChild(dialogIcon);
-	dialogText.innerHTML += "Are you sure you want to delete the file \""+fileName+"\"?";
-	newDialog.appendChild(dialogText);
-	document.body.appendChild(newDialog);
-	$(newDialog).dialog({
-		resizable: false,
-	  	height: "auto",
-	  	width: 400,
-	  	modal: true,
-	  	buttons: {
-			"Delete": function() {
-				callback();
-				$( this ).dialog( "close" );
-			},
-			Cancel: function() {
-				$( this ).dialog( "close" );
-			}
-		}
-	});
-}
-function deleteFileOption(){
-	var fileId = menuTarget.getAttribute("data-id");
-	var request = gapi.client.drive.files.delete({
-		"fileId": fileId
-	});
-	request.execute(function(resp){
-		console.log(resp);
-	});
-}
-function openSelectedFiles(){
-	selectedFiles;
-	for(var fileNum in selectedFiles){
-		var request = gapi.client.drive.files.get({
-			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
-			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
-		});
-		request.execute(function(resp){
-			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
-			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
-			if(resp.thumbnailLink == undefined){
-				createTile(name,fileType,resp.webViewLink,"googledrive");
-			}
-			else{
-				createTile(name,fileType,resp.thumbnailLink,"googledrive");
-			}
-			
-		});
+	//Style fileSelector
+	$("#fileSelectorDrive").dialog({
+	"width": ($("body").width() * 0.8),
+	"height": ($("body").height() * 0.8),
+	"close": function(){
+		$(this).remove();
+		driveDialogOpen = false;
 	}
-}
-function createString(length){
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	});
+	$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
+	var openFiles = document.createElement("BUTTON");
+	openFiles.className = "button";
+	openFiles.innerHTML = "Open File(s)"
+	openFiles.id = "driveOpenFiles";
+	openFiles.onclick = openSelectedFiles;
+	document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
+	var searchBar = document.createElement("INPUT");
+	searchBar.type = "text";
+	searchBar.id = "fileSearchBar";
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){searchFile(this.value);}");
+	searchBar.placeholder = "Search for file..."
+	$(searchBar).on("click",function(){
+		$(this).focus();
+	});
+	document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(searchBar);
+	var searchButton = document.createElement("button");
+	searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
 
-    for(var i = 0; i < length; i++){
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	$("#fileSearchBar").autocomplete({
+		"source": fileNames
+	});
+	$(".ui-dialog-titlebar").on({
+		"dblclick": toggleDialog
+	});
+	$( "button" ).button();
+
+}
+function clearFileSelections(){
+	if(driveDialogOpen){
+		fileNames = [];
+		document.getElementById("fileSelectorDrive").innerHTML = "";
 	}
-    return text;
+	else{
+		console.error("clearFileSeelctions called whilst dialog is not open")
+	}
 }

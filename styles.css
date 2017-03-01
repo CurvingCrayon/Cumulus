@@ -99,6 +99,10 @@ button {
 
 .tabButton {
 	font-size: 16px;
+	width: 90%;
+	margin-left: 5%;
+	margin-right: 5%;
+	text-align: center;
 }
 .fileOption{
 	display: inline-block;

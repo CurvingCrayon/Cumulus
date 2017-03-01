@@ -1,7 +1,7 @@
 var driveDialogOpen = false;
 // The Browser API key obtained from the Google Developers Console.
 // Replace with your own Browser API key, or your own key.
-var developerKey = 'AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0';
+var developerKey = "AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0";
 
 // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
 var CLIENT_ID= "905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercontent.com";
@@ -10,11 +10,13 @@ var CLIENT_ID= "905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercon
 var appId = "905474582382";
 
 // Scope to use to access user's Drive items.
-var SCOPES = ['https://www.googleapis.com/auth/drive'];
+var SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/plus.login","https://www.googleapis.com/auth/plus.me"];
 
-var driveLoadTime = 1;
+var driveLoadTime = 120;
 
 var currentLevel = "root";
+
+var googleInfo = {};
 
 var fileNames = []; //Used for search bar suggestions
 
@@ -34,27 +36,49 @@ function checkAuth() {
 gapi.auth.authorize(
 	
   {
-	'client_id': CLIENT_ID,
-	'scope': SCOPES.join(' '),
-	'immediate': true
+	"client_id": CLIENT_ID,
+	"scope": SCOPES.join(" "),
+	"immediate": true
   }, handleAuthResult);
 }
 
-
+/*function onSignIn(googleUser){
+	console.log("Signed in");
+	$(".g-signin2").hide();
+	$("#driveLogout").show();
+	$("#driveFileSelect").show();
+	var profile = googleUser.getBasicProfile();
+	console.log("ID: " + profile.getId()); // Do not send to your backend! Use an ID token instead.
+	console.log("Name: " + profile.getName());
+  	console.log("Image URL: " + profile.getImageUrl());
+	console.log("Email: " + profile.getEmail()); // This is null if the "email" scope is not present.
+}*/
+function driveLogout(){
+	gapi.auth.signOut();
+	$("#driveAuth").show();
+	$("#driveLogout").hide();
+	$("#driveSelectFile").hide();
+	
+}
 function handleAuthResult(authResult) {
 	console.log(authResult);
-if (authResult && !authResult.error) {
-  // Hide auth UI, then load client library.
-  	$("#driveAuth").hide();
-	$("#driveLogout").show();
+	if (authResult && !authResult.error) {
+	  // Hide auth UI, then load client library.
+		$("#driveAuth").hide();
+		$("#driveSelectFile").show();
+		$("#driveLogout").show();
+		
+
+	  	loadDriveApi();
+		loadProfileApi();
+	} else {
+	  // Show auth UI, allowing the user to initiate authorization by
+	  // clicking authorize button.
+		$("#driveAuth").show();
+		$("#driveSelectFile").hide();
+		$("#driveLogout").hide();
+	}
 	
-  loadDriveApi();
-} else {
-  // Show auth UI, allowing the user to initiate authorization by
-  // clicking authorize button.
-  	$("#driveAuth").show();
-	$("#driveLogout").hide();
-}
 }
 
 function handleAuthClick(event) {
@@ -67,11 +91,30 @@ function handleAuthClick(event) {
 	return false;
 }
 
-
-function loadDriveApi() {
-	gapi.client.load('drive', 'v3', initDrive);
+function loadProfileApi(){
+	gapi.client.load("plus", "v1", initProfile);
 }
+function loadDriveApi() {
+	gapi.client.load("drive", "v3", initDrive);
+}
+function initProfile(){
+	var requestInfo = gapi.client.plus.people.get({
+		'userId' : 'me'
+	});
 
+	requestInfo.execute(function(resp) {
+		googleInfo.id = resp.id;
+		googleInfo.name = resp.displayName;
+		googleInfo.image = resp.image.url;
+		try{
+			googleInfo.url = resp.url;
+		}
+		catch(e){
+			googleInfo.url = false;
+			console.error("Signed in user has no profile URL.");
+		}
+	});
+}
 function previewDriveFiles() {
 	if(!driveDialogOpen){
 		openDialog();
@@ -200,6 +243,7 @@ function loadFileSelections(req){
 	var request = gapi.client.drive.files.list(req);
 
 	request.execute(function(resp) {
+		console.log(resp);
 		var files = resp.files;
 		if (files && files.length > 0 && driveDialogOpen) {
 			//Start loading options
@@ -295,6 +339,7 @@ function loadFileSelections(req){
 					fileOption.ondblclick = openFolder;
 					fileOption.appendChild(fileThumb);
 					fileOption.appendChild(fileName);
+					
 					$("#fileSelectorDrive").append(fileOption);
 					//$("body").data("id").on("click",fileClicked);
 					//$("body").data("id").on("dblclick",openFolder);
@@ -322,6 +367,7 @@ function openDialog(){
 	document.body.appendChild(fileSelector);
 
 	//Style fileSelector
+	document.getElementById("fileSelectorDrive").setAttribute("onclick","checkTarget(event,deselectAllFiles);")
 	$("#fileSelectorDrive").dialog({
 	"width": ($("body").width() * 0.8),
 	"height": ($("body").height() * 0.8),
@@ -358,7 +404,7 @@ function openDialog(){
 	$( "button" ).button();
 
 }
-function clearFileSelections(){
+function clearFileSelections(){ //Clears all the files from the file selector dialog
 	if(driveDialogOpen){
 		fileNames = [];
 		document.getElementById("fileSelectorDrive").innerHTML = "";

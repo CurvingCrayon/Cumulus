@@ -285,7 +285,11 @@ function fileClicked(event){
 //	console.log(selectedFiles);
 }
 function deselectAllFiles(){
-	
+	var allFiles = $("#fileSelectorDrive").children();
+	for(var fileNum = 0; fileNum < allFiles.length; fileNum++){
+		$(allFiles[fileNum]).css(inactiveFileStyle());
+	}
+	selectedFiles = [];
 }
 function activeFileStyle(){
 	return {
@@ -322,4 +326,19 @@ function denyEvent(event){
 	event.stopPropagation();
 	event.preventDefault();
 	return false;
+}
+function checkTarget(event, callback){ //This function checks that a child is not trigger an elements event
+	if(event.target == undefined){
+		console.error("Bad 'event' object passed to checkTarget().");
+		return false;
+	}
+	if(event.target == event.currentTarget){
+		try{
+			callback();
+		}
+		catch(e){
+
+		}
+	}
+	return event.target == event.currentTarget;
 }

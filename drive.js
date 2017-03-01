@@ -113,7 +113,21 @@ function initProfile(){
 			googleInfo.url = false;
 			console.error("Signed in user has no profile URL.");
 		}
+		loadGoogleImage(googleInfo.image);
 	});
+}
+function loadGoogleImage(src){
+	var newImg = document.createElement("IMG");
+	var originalImg = document.getElementById("driveIcon");
+	var holder = document.getElementById("driveTabHolder");
+	newImg.className = "tabIcon";
+	newImg.id = "driveProfilePic";
+	newImg.src = src;
+	var prevHeight = originalImg.offsetHeight;
+	newImg.style.height = "0";
+	newImg.style.verticalAlign = "top";
+	holder.insertBefore(newImg,originalImg);
+	$(newImg).animate({"height":prevHeight});
 }
 function previewDriveFiles() {
 	if(!driveDialogOpen){

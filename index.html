@@ -53,7 +53,8 @@
 <!--			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>-->
 			<button id="driveLogout" class="tabButton" onclick="driveLogout();">Logout</button>
 			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File</button>
-            <img class="tabIcon" src="images/product128.png" />
+			<div class="tabIconHolder" id="driveTabHolder"><img class="tabIcon" id="driveIcon" src="images/product128.png" /></div>
+<!--            <img class="tabIcon" src="images/product128.png" />-->
         </div>
 		<!-- DROPBOX TAB -->
 		<div class="tab" data-open="false">

@@ -205,31 +205,49 @@ function toggleTab(event){
 	}
 }
 function toggleDialog(event){
-	var elem = event.currentTarget.parentNode.children[1];
-	var prevHeight = elem.getAttribute("data-height");
-	if(prevHeight == null){
-		elem.setAttribute("data-height",$(elem).height());
-		$(elem).animate({
-			"height": "0px",
-			"min-height": "0px"
-		});
-	}
-	else{
-		if($(elem).height() == 0){
-			$(elem).animate({
-				"height": prevHeight
-			});
+	var elem = event.currentTarget;
+	var numLoops = 0;
+	var maxLoops = 10;
+	var foundElem = false;
+	//Find the eldest parent of the dialog box
+	while(!foundElem && numLoops < maxLoops){ //Keep going to the parent until you get the eldest. Do this a only a certain number of times
+		if(elem.hasAttribute("role") && elem.getAttribute("role") === "dialog"){
+			foundElem = true;
 		}
 		else{
+			elem = elem.parentNode;
+		}
+		numLoops++;
+	}
+	if(numLoops >= maxLoops){
+		console.error("toggleDialog could not find correct parent");
+	}
+	else{
+		elem = elem.children[1];
+		var prevHeight = elem.getAttribute("data-height");
+		if(prevHeight == null){
 			elem.setAttribute("data-height",$(elem).height());
-			elem.parentNode.style.height="auto";
 			$(elem).animate({
 				"height": "0px",
 				"min-height": "0px"
 			});
 		}
-	}
-	
+		else{
+			if($(elem).height() == 0){
+				$(elem).animate({
+					"height": prevHeight
+				});
+			}
+			else{
+				elem.setAttribute("data-height",$(elem).height());
+				elem.parentNode.style.height="auto";
+				$(elem).animate({
+					"height": "0px",
+					"min-height": "0px"
+				});
+			}
+		}
+	}	
 }
 //This handles file selection for Google Drive
 function fileClicked(event){
@@ -290,6 +308,7 @@ function deselectAllFiles(){
 		$(allFiles[fileNum]).css(inactiveFileStyle());
 	}
 	selectedFiles = [];
+	updateOpenFileButton(0);
 }
 function activeFileStyle(){
 	return {
@@ -327,7 +346,7 @@ function denyEvent(event){
 	event.preventDefault();
 	return false;
 }
-function checkTarget(event, callback){ //This function checks that a child is not trigger an elements event
+function checkTarget(event, elements, callback){ //This function checks that a child is not trigger an elements event
 	if(event.target == undefined){
 		console.error("Bad 'event' object passed to checkTarget().");
 		return false;

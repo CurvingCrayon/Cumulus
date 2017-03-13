@@ -58,7 +58,8 @@ function driveLogout(){
 	$("#driveAuth").show();
 	$("#driveLogout").hide();
 	$("#driveSelectFile").hide();
-	
+	$("#driveProfilePic").remove();
+	googleInfo = {};
 }
 function handleAuthResult(authResult) {
 	console.log(authResult);
@@ -120,14 +121,13 @@ function loadGoogleImage(src){
 	var newImg = document.createElement("IMG");
 	var originalImg = document.getElementById("driveIcon");
 	var holder = document.getElementById("driveTabHolder");
-	newImg.className = "tabIcon";
+	newImg.className = "tabIcon profileIcon";
 	newImg.id = "driveProfilePic";
 	newImg.src = src;
-	var prevHeight = originalImg.offsetHeight;
-	newImg.style.height = "0";
+	newImg.style.opacity = "0";
 	newImg.style.verticalAlign = "top";
 	holder.insertBefore(newImg,originalImg);
-	$(newImg).animate({"height":prevHeight});
+	$(newImg).animate({"opacity":1});
 }
 function previewDriveFiles() {
 	if(!driveDialogOpen){
@@ -175,6 +175,9 @@ function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
 }
 
 function updateOpenFileButton(numFiles){
+	if(numFiles == undefined){
+		numFiles = 0;
+	}
 	document.getElementById("driveOpenFiles").innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
 	
 }
@@ -218,12 +221,15 @@ function deleteFile(){
 }
 function openSelectedFiles(){
 	selectedFiles;
+	var batch = gapi.client.newBatch();
+	
 	for(var fileNum in selectedFiles){
 		var request = gapi.client.drive.files.get({
 			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
-			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
+			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink,id,name"
 		});
-		request.execute(function(resp){
+		console.info(selectedFiles[fileNum][0].getAttribute("data-id"));
+		/*request.execute(function(resp){
 			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
 			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
 			if(resp.thumbnailLink == undefined){
@@ -233,8 +239,15 @@ function openSelectedFiles(){
 				createTile(name,fileType,resp.thumbnailLink,"googledrive");
 			}
 			
-		});
+		});*/
+		batch.add(request);
+		
 	}
+	batch.execute(function(map,response){
+		console.log(map);
+		
+	});
+	console.log(batch);
 }
 function createString(length){
     var text = "";
@@ -381,7 +394,7 @@ function openDialog(){
 	document.body.appendChild(fileSelector);
 
 	//Style fileSelector
-	document.getElementById("fileSelectorDrive").setAttribute("onclick","checkTarget(event,deselectAllFiles);")
+	document.getElementById("fileSelectorDrive").setAttribute("onclick","if(checkTarget(event)){deselectAllFiles();}")
 	$("#fileSelectorDrive").dialog({
 	"width": ($("body").width() * 0.8),
 	"height": ($("body").height() * 0.8),
@@ -412,9 +425,12 @@ function openDialog(){
 	$("#fileSearchBar").autocomplete({
 		"source": fileNames
 	});
-	$(".ui-dialog-titlebar").on({
-		"dblclick": toggleDialog
-	});
+	for(var elem = 0; elem < document.getElementsByClassName("ui-dialog-titlebar").length; elem++){
+		document.getElementsByClassName("ui-dialog-titlebar")[elem].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		document.getElementsByClassName("ui-dialog-titlebar")[elem].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+	}
+	
+	
 	$( "button" ).button();
 
 }

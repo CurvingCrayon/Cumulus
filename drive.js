@@ -12,7 +12,7 @@ var appId = "905474582382";
 // Scope to use to access user's Drive items.
 var SCOPES = ['https://www.googleapis.com/auth/drive'];
 
-var driveLoadTime = 50;
+var driveLoadTime = 2000;
 
 /**
 * Check if current user has authorized this application.
@@ -80,6 +80,7 @@ var request = gapi.client.drive.files.list({
 	//"pageSize": 10,
 	"corpus": "user",
 	"spaces": "drive",
+	"quotaUser": createString(5),
 	"q": "'root' in parents", //Search query
 	"orderBy": "name",
 	"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
@@ -95,74 +96,125 @@ request.execute(function(resp) {
 		fileSelector.title = "Select File (Google Drive)";
 		var fileOptions = [];
 		for (var i = 0; i < files.length; i++) {
-			var file = files[i];
-			var fileOption = document.createElement("DIV");
-			fileOption.setAttribute("data-id",file.id);
-			fileOption.setAttribute("data-parents",file.parents.join(","));
-			fileOption.className = "fileOption";
-
-			var fileThumb = document.createElement("IMG");
-			fileThumb.className = "fileOptionThumb";
-			if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
-				fileThumb.src = file.thumbnailLink;
-			}
-			else{
-				switch(file.mimeType){
-					case "application/vnd.google-apps.folder":
-						fileThumb.src = "images/folder.png";
-						fileOption.className += " fileOptionFolder";
-					break;
-				}
-			}
-			fileThumb.alt = file.name;
-
-			var fileName = document.createElement("H2");
-			fileName.className = "fileOptionName";
-			fileName.innerHTML = file.name;
-
-			fileOption.appendChild(fileThumb);
-			fileOption.appendChild(fileName);
 			
-			fileOptions.push(fileOption);
 	  	}
 		
 		document.body.appendChild(fileSelector);
-		var counter = 0;
-		console.log(fileOptions)
-		var intervalTicket = setInterval(function(){
-			if(counter < fileOptions.length){
-				$("#fileSelectorDrive").append(fileOptions[counter]);
-				counter++;
-			}
-			else{
-				clearInterval(intervalTicket);
-			}
-		},driveLoadTime);
 		
-		
+		//Style fileSelector
 		$("#fileSelectorDrive").dialog({
-			"width": ($("body").width() * 0.8),
-			"height": ($("body").height() * 0.8),
-			"close": function(){
-				$(this).remove();
-				driveDialogOpen = false;
-			}
+		"width": ($("body").width() * 0.8),
+		"height": ($("body").height() * 0.8),
+		"close": function(){
+			$(this).remove();
+			driveDialogOpen = false;
+		}
 		});
 		$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
 		var openFiles = document.createElement("BUTTON");
 		openFiles.className = "button";
 		openFiles.innerHTML = "Open File(s)"
 		openFiles.id = "driveOpenFiles";
-		document.getElementById("fileSelectorDrive").parentElement.children[0].children[0].appendChild(openFiles);
-		$(".tile").dialog({
-			width: 100
-		});
-		$(".fileOption").on("click",fileClicked);
-		$(".fileOptionFolder").on("dblclick",openFolder);
+		openFiles.onclick = openSelectedFiles;
+		document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
 		$(".ui-dialog-titlebar").on({
 			"dblclick": toggleDialog
 		});
 		$( "button" ).button();
+		
+		//Start loading options
+		var counter = 0;
+		var intervalTicket = setInterval(function(){
+			if(counter < files.length){
+				var file = files[counter];
+				//Preload any folders
+				var folder = true;
+				while(folder && counter < files.length){
+					file = files[counter];
+					if(file.mimeType === "application/vnd.google-apps.folder"){
+						var fileOption = document.createElement("DIV");
+						fileOption.setAttribute("data-id",file.id);
+						fileOption.setAttribute("data-name",file.name);
+						fileOption.setAttribute("data-parents",file.parents.join(","));
+						fileOption.setAttribute("data-mimetype",file.mimeType);
+						fileOption.className = "fileOption";
+
+						var fileThumb = document.createElement("IMG");
+						fileThumb.className = "fileOptionThumb";
+						if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
+							fileThumb.src = file.thumbnailLink;
+						}
+						else{
+							switch(file.mimeType){
+								case "application/vnd.google-apps.folder":
+									fileThumb.src = "images/folder.png";
+									fileOption.className += " fileOptionFolder";
+								break;
+							}
+						}
+						fileThumb.alt = file.name;
+
+						var fileName = document.createElement("H2");
+						fileName.className = "fileOptionName";
+						fileName.innerHTML = file.name;
+						fileOption.onclick = fileClicked;
+						fileOption.ondblclick = openFolder;
+						fileOption.appendChild(fileThumb);
+						fileOption.appendChild(fileName);
+						$("#fileSelectorDrive").append(fileOption);
+						
+						counter++;
+					}
+					else{
+						folder = false;
+					}
+				}
+				if(counter < files.length){
+					file = files[counter];
+					var fileOption = document.createElement("DIV");
+					fileOption.setAttribute("data-id",file.id);
+					fileOption.setAttribute("data-name",file.name);
+					fileOption.setAttribute("data-parents",file.parents.join(","));
+					fileOption.setAttribute("data-mimetype",file.mimeType);
+					fileOption.className = "fileOption";
+
+					var fileThumb = document.createElement("IMG");
+					fileThumb.className = "fileOptionThumb";
+					if(file.thumbnailLink != undefined){ //Thumbnail for the file exists
+						fileThumb.src = file.thumbnailLink;
+					}
+					else{
+						switch(file.mimeType){
+							case "application/vnd.google-apps.folder":
+								fileThumb.src = "images/folder.png";
+								fileOption.className += "fileOptionFolder";
+							break;
+						}
+					}
+					fileThumb.alt = file.name;
+
+					var fileName = document.createElement("H2");
+					fileName.className = "fileOptionName";
+					fileName.innerHTML = file.name;
+					
+					fileOption.onclick = fileClicked;
+					fileOption.ondblclick = openFolder;
+					fileOption.appendChild(fileThumb);
+					fileOption.appendChild(fileName);
+					$("#fileSelectorDrive").append(fileOption);
+					//$("body").data("id").on("click",fileClicked);
+					//$("body").data("id").on("dblclick",openFolder);
+
+					counter++;
+				}
+				else{
+					clearInterval(intervalTicket);
+				}
+			}
+			else{
+				clearInterval(intervalTicket);
+			}
+		},driveLoadTime);
 	}
   });
 }
@@ -177,7 +229,7 @@ function initDrive(){
 	
 }
 
-function createGoogleTile(name,id,viewLink,editLink, iconSrc){
+function createGoogleTile(name,id,viewLink,editLink, iconSrc){ //Deprecated
 	var newTile = document.createElement("DIV");
 	newTile.className = "tile";
 	newTile.setAttribute("title",name)
@@ -196,4 +248,71 @@ picker.setVisible(true);*/
 function updateOpenFileButton(numFiles){
 	document.getElementById("driveOpenFiles").innerHTML = "Open Files - " + String(numFiles) + " Selected"
 	
+}
+function confirmDelete(callback){
+	var fileName = menuTarget.getAttribute("data-name");
+	var newDialog = document.createElement("DIV");
+	newDialog.id = "deleteDialog";
+	newDialog.title = "Delete file?"
+	var dialogText = document.createElement("P");
+	var dialogIcon = document.createElement("SPAN");
+	dialogIcon.className ="ui-icon ui-icon-alert";
+	dialogIcon.id = "deleteDialogIcon";
+	dialogText.appendChild(dialogIcon);
+	dialogText.innerHTML += "Are you sure you want to delete the file \""+fileName+"\"?";
+	newDialog.appendChild(dialogText);
+	document.body.appendChild(newDialog);
+	$(newDialog).dialog({
+		resizable: false,
+	  	height: "auto",
+	  	width: 400,
+	  	modal: true,
+	  	buttons: {
+			"Delete": function() {
+				callback();
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+}
+function deleteFileOption(){
+	var fileId = menuTarget.getAttribute("data-id");
+	var request = gapi.client.drive.files.delete({
+		"fileId": fileId
+	});
+	request.execute(function(resp){
+		console.log(resp);
+	});
+}
+function openSelectedFiles(){
+	selectedFiles;
+	for(var fileNum in selectedFiles){
+		var request = gapi.client.drive.files.get({
+			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
+			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink"
+		});
+		request.execute(function(resp){
+			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
+			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
+			if(resp.thumbnailLink == undefined){
+				createTile(name,fileType,resp.webViewLink,"googledrive");
+			}
+			else{
+				createTile(name,fileType,resp.thumbnailLink,"googledrive");
+			}
+			
+		});
+	}
+}
+function createString(length){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for(var i = 0; i < length; i++){
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+    return text;
 }

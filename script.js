@@ -194,7 +194,7 @@ function toggleTab(event){
 	var elem = event.currentTarget;
 	var enabled = elem.getAttribute("data-open");
 	$(elem).stop(true);
-	if(enabled === "true"){
+	if(event.type === "mouseleave"){
 		$(elem).animate({"top":tabOffset},tabSpeed);
 		elem.setAttribute("data-open","false");
 	}
@@ -202,6 +202,7 @@ function toggleTab(event){
 		$(elem).animate({"top":"0px"},tabSpeed);
 		elem.setAttribute("data-open","true");
 	}
+	console.log("TOggle");
 }
 function toggleDialog(event){
 	var elem = event.currentTarget;
@@ -327,15 +328,15 @@ function deselectAllFiles(event){
 }
 function activeFileStyle(){
 	return {
-		"border": "4px solid" + mainColor,
-		"padding": "16px",
+		"border": "2px solid" + mainColor,
+		"padding": "8px",
 		"backgroundColor": semiMainColor
 	}
 }
 function inactiveFileStyle(){
 	return {
 		"border": "none",
-		"padding": "20px",
+		"padding": "10px",
 		"backgroundColor": "rgba(0,0,0,0)"
 	}
 }

@@ -1,0 +1,72 @@
+body{
+	background-color: #f2f2f2;
+}
+p{
+/*	padding-left: 20px;*/
+}
+h1{
+	margin: 0;
+	border-bottom: 1px solid black;
+	padding: 4px;
+}
+h2{
+	margin: 20px;
+}
+#holder{
+	width: 50%;
+	margin-left: auto;
+	margin-right: auto;
+	box-shadow: 0 0 10px black;
+	padding: 40px;
+	min-height: 100%;
+	background-color: white;
+}
+.creditItem{
+	box-shadow: 0 0 2px black;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding: 20px;
+	border-radius: 3px;
+}
+.creditImage{
+	max-height: 128px;
+}
+#sidebar {
+	box-shadow: 0 0 10px black;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 15%;
+	height: 100%;
+	background-color: white;
+}
+
+h3 {
+	margin: 20px;
+	padding: 5px;
+	border-bottom: 1px solid black;
+}
+h4:hover, h5:hover{
+	background-color: rgba(255,204,0,0.3);
+}
+h4, h5{
+	margin: 0;
+	display: block;
+	height: auto;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+h4 a{
+	padding: 20px;
+	font-size: 20px;
+}
+h5 a{
+	font-size: 16px;
+	padding: 15px;
+	padding-left: 40px;
+}
+#contents {
+	overflow: auto;
+	width: 100%;
+	height: auto;
+}

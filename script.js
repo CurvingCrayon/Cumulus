@@ -2,7 +2,6 @@ var tabSpeed = "fast";
 var tabOffset= "-100px";
 var mainColor = "#FFCC00";
 var semiMainColor = "rgba(255,204,0,0.3)";
-var selectedFiles = []; //2d array with [DOM element, file id]
 $(function(){
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object
@@ -205,36 +204,62 @@ function toggleTab(event){
 	}
 }
 function toggleDialog(event){
-	var elem = event.currentTarget.parentNode.children[1];
-	var prevHeight = elem.getAttribute("data-height");
-	if(prevHeight == null){
-		elem.setAttribute("data-height",$(elem).height());
-		$(elem).animate({
-			"height": "0px",
-			"min-height": "0px"
-		});
-	}
-	else{
-		if($(elem).height() == 0){
-			$(elem).animate({
-				"height": prevHeight
-			});
+	var elem = event.currentTarget;
+	var numLoops = 0;
+	var maxLoops = 10;
+	var foundElem = false;
+	//Find the eldest parent of the dialog box
+	while(!foundElem && numLoops < maxLoops){ //Keep going to the parent until you get the eldest. Do this a only a certain number of times
+		if(elem.hasAttribute("role") && elem.getAttribute("role") === "dialog"){
+			foundElem = true;
 		}
 		else{
+			elem = elem.parentNode;
+		}
+		numLoops++;
+	}
+	if(numLoops >= maxLoops){
+		console.error("toggleDialog could not find correct parent");
+	}
+	else{
+		elem = elem.children[1];
+		var prevHeight = elem.getAttribute("data-height");
+		if(prevHeight == null){
 			elem.setAttribute("data-height",$(elem).height());
-			elem.parentNode.style.height="auto";
 			$(elem).animate({
 				"height": "0px",
 				"min-height": "0px"
 			});
 		}
-	}
-	
+		else{
+			if($(elem).height() == 0){
+				$(elem).animate({
+					"height": prevHeight
+				});
+			}
+			else{
+				elem.setAttribute("data-height",$(elem).height());
+				elem.parentNode.style.height="auto";
+				$(elem).animate({
+					"height": "0px",
+					"min-height": "0px"
+				});
+			}
+		}
+	}	
 }
 //This handles file selection for Google Drive
 function fileClicked(event){
 	var elem = event.currentTarget;
-	var allFiles = $("#fileSelectorDrive").children(); //All the files currently in the file window
+	var allFiles = elem.parentNode.children; //All the files currently in the file window
+	var parentId = elem.parentNode.getAttribute("id");
+	var dialogIndex = findDialog(parentId);
+	if(dialogIndex != -1){
+		var selectedFiles = openDialogs[dialogIndex].selectedFiles;
+	}
+	else{
+		console.error("Dialog Index not found for clicked file.")
+	}
 	if(event.ctrlKey){ //If the control key was being held
 		var result = searchArray(selectedFiles, elem);
 		if(!result){ //If the file hadn't already been selected
@@ -281,11 +306,24 @@ function fileClicked(event){
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		$(elem).css(activeFileStyle());
 	}
-	updateOpenFileButton(selectedFiles.length);
-//	console.log(selectedFiles);
+	openDialogs[dialogIndex].selectedFiles = selectedFiles;
+	openDialogs[dialogIndex].updateOpenFileButton(selectedFiles.length);
 }
-function deselectAllFiles(){
-	
+function deselectAllFiles(event){
+	var elem = event.currentTarget;
+	var parentId = elem.getAttribute("id");
+	var allFiles = elem.children;
+	for(var fileNum = 0; fileNum < allFiles.length; fileNum++){
+		$(allFiles[fileNum]).css(inactiveFileStyle());
+	}
+	var dialogIndex = findDialog(parentId);
+	if(dialogIndex != -1){
+		openDialogs[dialogIndex].updateOpenFileButton(0);
+		openDialogs[dialogIndex].selectedFiles = [];
+	}
+	else{
+		console.error("Dialog Index not found for deselecting files.")
+	}
 }
 function activeFileStyle(){
 	return {
@@ -317,4 +355,24 @@ function searchArray(arr, obj){
 }
 function openFolder(event){
 	console.log(event.currentTarget.getAttribute("data-id"));
+}
+function denyEvent(event){
+	event.stopPropagation();
+	event.preventDefault();
+	return false;
+}
+function checkTarget(event, elements, callback){ //This function checks that a child is not trigger an elements event
+	if(event.target == undefined){
+		console.error("Bad 'event' object passed to checkTarget().");
+		return false;
+	}
+	if(event.target == event.currentTarget){
+		try{
+			callback();
+		}
+		catch(e){
+
+		}
+	}
+	return event.target == event.currentTarget;
 }

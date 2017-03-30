@@ -2,7 +2,6 @@ var tabSpeed = "fast";
 var tabOffset= "-100px";
 var mainColor = "#FFCC00";
 var semiMainColor = "rgba(255,204,0,0.3)";
-var selectedFiles = []; //2d array with [DOM element, file id]
 $(function(){
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object
@@ -252,7 +251,15 @@ function toggleDialog(event){
 //This handles file selection for Google Drive
 function fileClicked(event){
 	var elem = event.currentTarget;
-	var allFiles = $("#fileSelectorDrive").children(); //All the files currently in the file window
+	var allFiles = elem.parentNode.children; //All the files currently in the file window
+	var parentId = elem.parentNode.getAttribute("id");
+	var dialogIndex = findDialog(parentId);
+	if(dialogIndex != -1){
+		var selectedFiles = openDialogs[dialogIndex].selectedFiles;
+	}
+	else{
+		console.error("Dialog Index not found for clicked file.")
+	}
 	if(event.ctrlKey){ //If the control key was being held
 		var result = searchArray(selectedFiles, elem);
 		if(!result){ //If the file hadn't already been selected
@@ -299,16 +306,24 @@ function fileClicked(event){
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		$(elem).css(activeFileStyle());
 	}
-	updateOpenFileButton(selectedFiles.length);
-//	console.log(selectedFiles);
+	openDialogs[dialogIndex].selectedFiles = selectedFiles;
+	openDialogs[dialogIndex].updateOpenFileButton(selectedFiles.length);
 }
-function deselectAllFiles(){
-	var allFiles = $("#fileSelectorDrive").children();
+function deselectAllFiles(event){
+	var elem = event.currentTarget;
+	var parentId = elem.getAttribute("id");
+	var allFiles = elem.children;
 	for(var fileNum = 0; fileNum < allFiles.length; fileNum++){
 		$(allFiles[fileNum]).css(inactiveFileStyle());
 	}
-	selectedFiles = [];
-	updateOpenFileButton(0);
+	var dialogIndex = findDialog(parentId);
+	if(dialogIndex != -1){
+		openDialogs[dialogIndex].updateOpenFileButton(0);
+		openDialogs[dialogIndex].selectedFiles = [];
+	}
+	else{
+		console.error("Dialog Index not found for deselecting files.")
+	}
 }
 function activeFileStyle(){
 	return {

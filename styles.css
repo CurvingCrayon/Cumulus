@@ -162,3 +162,7 @@ button {
 .profileIcon{
 	z-index: 3;
 }
+.fileSearchBar{
+	margin-left: 10px;
+	margin-right: 10px;
+}

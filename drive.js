@@ -1,4 +1,3 @@
-var driveDialogOpen = false;
 // The Browser API key obtained from the Google Developers Console.
 // Replace with your own Browser API key, or your own key.
 var developerKey = "AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0";
@@ -21,7 +20,10 @@ var fileNames = []; //Used for search bar suggestions
 
 var imageQue = [];
 
+var openDialogs = [];
+
 var imageLoading = false;
+var dialogStringLength = 5;
 
 var standardRequest = {
 	//"pageSize": 10,
@@ -133,14 +135,18 @@ function loadGoogleImage(src){
 	$(newImg).animate({"opacity":1});
 }
 function previewDriveFiles() {
-	if(!driveDialogOpen){
-		openDialog();
-	}
-	loadFileSelections(standardRequest);
+	var dialog = createDialog();
+	dialog.loadFileSelections(standardRequest);
+}
+function createDialog(){
+	var rand = createString(dialogStringLength);
+	var dialog = new GoogleDialog(rand); //Each dialog is given their own random id
+	openDialogs.push(dialog);
+	return dialog;
 }
 function searchFile(query){
 	if(driveDialogOpen){
-		var request = gapi.client.drive.files.list({
+		var request = {
 			//"pageSize": 10,
 			"corpus": "user",
 			"spaces": "drive",
@@ -149,7 +155,7 @@ function searchFile(query){
 			"orderBy": "name",
 			"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
 			//Others include: webViewLink, webContentLink, nextPageToken
-		});
+		};
 		clearFileSelections();
 		loadFileSelections(request);
 	}
@@ -164,13 +170,7 @@ function refreshFiles(){
 function initDrive(){
 	
 }
-function updateOpenFileButton(numFiles){
-	if(numFiles == undefined){
-		numFiles = 0;
-	}
-	document.getElementById("driveOpenFiles").innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
-	
-}
+
 function confirmDelete(callback){
 	var fileName = menuTarget.getAttribute("data-name");
 	var newDialog = document.createElement("DIV");
@@ -209,35 +209,35 @@ function deleteFile(){
 		console.log(resp);
 	});
 }
-function openSelectedFiles(){
-	selectedFiles;
+function openSelectedFiles(event){
+	var elem = event.currentTarget;
+	var id = elem.parentNode.parentNode.parentNode.children[1].getAttribute("id");
 	var batch = gapi.client.newBatch();
-	
-	for(var fileNum in selectedFiles){
-		var request = gapi.client.drive.files.get({
-			"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
-			"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink,id,name"
+	var dialogIndex = findDialog(id);
+	if(dialogIndex != -1){
+		var selectedFiles = openDialogs[dialogIndex].selectedFiles;
+		for(var fileNum in selectedFiles){
+			var request = gapi.client.drive.files.get({
+				"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
+				"fields" : "webViewLink,webContentLink,iconLink,thumbnailLink,id,name,mimeType"
+			});
+			console.info(selectedFiles[fileNum][0].getAttribute("data-id"));
+			batch.add(request);
+
+		}
+		batch.execute(function(map,response){
+			response = JSON.parse(response);
+			console.log(response);
+			globResponse = response;
+			for(var fileNum = 0; fileNum < response.length; fileNum++){ //Go through each file in the batch response
+				var file = response[fileNum].result;
+				createTile(file.name,file.mimeType,file.webViewLink,"googledrive");
+			}
 		});
-		console.info(selectedFiles[fileNum][0].getAttribute("data-id"));
-		/*request.execute(function(resp){
-			var name = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[0];
-			var fileType = selectedFiles[fileNum][0].getAttribute("data-name").split(".")[1];
-			if(resp.thumbnailLink == undefined){
-				createTile(name,fileType,resp.webViewLink,"googledrive");
-			}
-			else{
-				createTile(name,fileType,resp.thumbnailLink,"googledrive");
-			}
-			
-		});*/
-		batch.add(request);
-		
 	}
-	batch.execute(function(map,response){
-		console.log(response);
-		
-	});
-	console.log(batch);
+	else{
+		console.error("Dialog Index not found for opening files.");
+	}
 }
 function createString(length){
     var text = "";
@@ -256,126 +256,10 @@ function checkEnter(event){
 		return false;
 	}
 }
-function loadFileSelections(req){
-	var request = gapi.client.drive.files.list(req);
 
-	request.execute(function(resp) {
-		console.log(resp);
-		var files = resp.files;
-		if (files && files.length > 0 && driveDialogOpen) {
-			for(var fileNum = 0; fileNum < files.length; fileNum++){
-				var file = files[fileNum];
-				createGoogleTile(file);
-				 //This function is self recurring
-			}	
-			loadNextImage();
-		}
-	});
-}
-function openDialog(){
-	driveDialogOpen = true;
-	var fileSelector = document.createElement("DIV");
-	fileSelector.id = "fileSelectorDrive";
-	fileSelector.title = "Select File (Google Drive)";
-	var fileOptions = [];
 
-	document.body.appendChild(fileSelector);
 
-	//Style fileSelector
-	document.getElementById("fileSelectorDrive").setAttribute("onclick","if(checkTarget(event)){deselectAllFiles();}")
-	$("#fileSelectorDrive").dialog({
-	"width": ($("body").width() * 0.8),
-	"height": ($("body").height() * 0.8),
-	"close": function(){
-		$(this).remove();
-		driveDialogOpen = false;
-	}
-	});
-	$("#fileSelectorDrive").parent().attr("data-tooltip","Select file from Google Drive.");
-	var openFiles = document.createElement("BUTTON");
-	openFiles.className = "button";
-	openFiles.innerHTML = "Open File(s)"
-	openFiles.id = "driveOpenFiles";
-	openFiles.onclick = openSelectedFiles;
-	document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(openFiles);
-	var searchBar = document.createElement("INPUT");
-	searchBar.type = "text";
-	searchBar.id = "fileSearchBar";
-	searchBar.setAttribute("onkeypress","if(checkEnter(event)){searchFile(this.value);}");
-	searchBar.placeholder = "Search for file..."
-	$(searchBar).on("click",function(){
-		$(this).focus();
-	});
-	document.getElementById("fileSelectorDrive").parentNode.children[0].children[0].appendChild(searchBar);
-	var searchButton = document.createElement("button");
-	searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
 
-	$("#fileSearchBar").autocomplete({
-		"source": fileNames
-	});
-	for(var elem = 0; elem < document.getElementsByClassName("ui-dialog-titlebar").length; elem++){
-		document.getElementsByClassName("ui-dialog-titlebar")[elem].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-		document.getElementsByClassName("ui-dialog-titlebar")[elem].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-	}
-	
-	
-	$( "button" ).button();
-
-}
-function clearFileSelections(){ //Clears all the files from the file selector dialog
-	if(driveDialogOpen){
-		fileNames = [];
-		document.getElementById("fileSelectorDrive").innerHTML = "";
-	}
-	else{
-		console.error("clearFileSelctions called whilst dialog is not open")
-	}
-}
-function createGoogleTile(fileObj){
-	var fileOption = document.createElement("DIV");
-	fileOption.setAttribute("data-id",fileObj.id);
-	fileOption.setAttribute("data-name",fileObj.name);
-	fileNames.push(fileObj.name); //Used for search bar suggestions
-	if(file.parents != undefined){
-		fileOption.setAttribute("data-parents",fileObj.parents.join(","));
-	}
-	else{
-		fileOption.setAttribute("data-parents","");
-	}
-	fileOption.setAttribute("data-mimetype",fileObj.mimeType);
-	fileOption.className = "fileOption";
-
-	var fileThumb = document.createElement("IMG");
-	fileThumb.className = "fileOptionThumb";
-	
-	if(fileObj.thumbnailLink != undefined){ //If the thumbnail for the file exists
-		fileThumb.src = "images/loading.gif";
-		queImage(fileThumb,fileObj.thumbnailLink);
-	}
-	else{
-		switch(file.mimeType){
-			case "application/vnd.google-apps.folder":
-				fileThumb.src = "images/folder.png";
-				fileOption.className += " fileOptionFolder";
-			break;
-				
-			default:
-				fileThumb.src = "images/file.png";
-			break;
-		}
-	}
-	fileThumb.alt = fileObj.name;
-	
-	
-	var fileName = document.createElement("H2");
-	fileName.className = "fileOptionName";
-	fileName.innerHTML = fileObj.name;
-	fileOption.onclick = fileClicked;
-	fileOption.ondblclick = openFolder;
-	fileOption.appendChild(fileThumb);
-	fileOption.appendChild(fileName);
-	$("#fileSelectorDrive").append(fileOption);
-}
 function loadNextImage(){
 	if(imageQue.length > 0 && !imageLoading){
 		var elem = imageQue[0][0];
@@ -392,4 +276,145 @@ function loadNextImage(){
 }
 function queImage(elem, src){
 	imageQue.push([elem,src]);
+}
+function GoogleDialog(id){ //JavaScript class
+	var fileSelector = document.createElement("DIV");
+	fileSelector.className = "fileSelectorDrive";
+	fileSelector.title = "Select File (Google Drive)";
+	fileSelector.id = id;
+	//Style fileSelector
+	fileSelector.setAttribute("onclick","if(checkTarget(event)){deselectAllFiles(event);}")
+	document.body.appendChild(fileSelector);
+	
+	$(fileSelector).dialog({
+	"width": ($("body").width() * 0.8),
+	"height": ($("body").height() * 0.8),
+	"close": function(){
+		$(this).remove();
+		driveDialogOpen = false;
+	}
+	});
+	$(fileSelector).parent().attr("data-tooltip","Select file from Google Drive.");
+	//Open Selected Files Button
+	var openFiles = document.createElement("BUTTON");
+	openFiles.innerHTML = "Open File(s)"
+	openFiles.class = "driveOpenFiles";
+	openFiles.setAttribute("onclick","openSelectedFiles(event);");
+	$(openFiles).button();
+	fileSelector.parentNode.children[0].children[0].appendChild(openFiles);
+	//Search Bar
+	var searchBar = document.createElement("INPUT");
+	searchBar.type = "text";
+	searchBar.className = "fileSearchBar";
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){searchFile(this.value);}");
+	searchBar.setAttribute("onmousedown","event.stopPropagation();"); //Stops dragging from the searchbar
+	searchBar.placeholder = "Search for file..."
+	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
+	
+	var searchButton = document.createElement("BUTTON");
+//ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
+	$(searchBar).autocomplete({
+		"source": this.fileNames
+	});
+		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		fileSelector.parentNode.setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+	var globalThis = this;
+	this.id = id;
+	this.file = fileSelector;
+	this.open = openFiles;
+	this.searchBar = searchBar;
+	this.searchButton = searchButton;
+	this.fileOptions = [];
+	this.fileNames = [];
+	this.selectedFiles = [];
+	
+	this.createGoogleTile = function(fileObj){
+		var fileOption = document.createElement("DIV");
+		fileOption.setAttribute("data-id",fileObj.id);
+		fileOption.setAttribute("data-name",fileObj.name);
+		fileNames.push(fileObj.name); //Used for search bar suggestions
+		if(file.parents != undefined){
+			fileOption.setAttribute("data-parents",fileObj.parents.join(","));
+		}
+		else{
+			fileOption.setAttribute("data-parents","");
+		}
+		fileOption.setAttribute("data-mimetype",fileObj.mimeType);
+		fileOption.className = "fileOption";
+
+		var fileThumb = document.createElement("IMG");
+		fileThumb.className = "fileOptionThumb";
+
+		if(fileObj.thumbnailLink != undefined){ //If the thumbnail for the file exists
+			fileThumb.src = "images/loading.gif";
+			queImage(fileThumb,fileObj.thumbnailLink);
+		}
+		else{
+			switch(file.mimeType){
+				case "application/vnd.google-apps.folder":
+					fileThumb.src = "images/folder.png";
+					fileOption.className += " fileOptionFolder";
+				break;
+
+				default:
+					fileThumb.src = "images/file.png";
+				break;
+			}
+		}
+		fileThumb.alt = fileObj.name;
+
+
+		var fileName = document.createElement("H2");
+		fileName.className = "fileOptionName";
+		fileName.innerHTML = fileObj.name;
+		fileOption.onclick = fileClicked;
+		fileOption.ondblclick = openFolder;
+		fileOption.appendChild(fileThumb);
+		fileOption.appendChild(fileName);
+		globalThis.file.append(fileOption);
+	}
+	this.handleResponse = function(resp) {
+		console.log(resp);
+		var files = resp.files;
+		if (files && files.length > 0) {
+			for(var fileNum = 0; fileNum < files.length; fileNum++){
+				var file = files[fileNum];
+				globalThis.createGoogleTile(file);
+			}	
+			loadNextImage(); //This function is self recurring
+		}
+	};
+	this.loadFileSelections = function(req){
+		var request = gapi.client.drive.files.list(req);
+		console.log(req);
+		console.log(globalThis);
+		request.execute(globalThis.handleResponse);
+	}
+	this.updateOpenFileButton = function(numFiles){
+		if(numFiles == undefined){
+			numFiles = 0;
+		}
+		globalThis.open.innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
+
+	}
+	this.clearFileSelections = function(){ //Clears all the files from the file selector dialog
+		if(driveDialogOpen){
+			fileNames = [];
+			//ID ERROR
+			globalThis.file.innerHTML = "";
+		}
+		else{
+			console.error("clearFileSelctions called whilst dialog is not open")
+		}
+	}
+	
+}
+function findDialog(id){
+	var index = -1;
+	for(var dialogNum = 0; dialogNum < openDialogs.length; dialogNum++){
+		if(openDialogs[dialogNum].id === id){
+			index = dialogNum;
+		}
+	}
+	return index;
 }

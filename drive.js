@@ -415,6 +415,22 @@ function findDialog(id){
 		if(openDialogs[dialogNum].id === id){
 			index = dialogNum;
 		}
+    return index;
+}
+
+function loadNextImage(){
+	if(imageQue.length > 0 && !imageLoading){
+		var elem = imageQue[0][0];
+		imageLoading = true;
+		elem.setAttribute("onload","imageLoading = false;loadNextImage();");
+		elem.setAttribute("onerror","this.src='images/brokenFile.png';imageLoading = false;loadNextImage();");
+		var src = imageQue[0][1];
+		elem.src = src;
+		elem.alt = src;
+		imageQue.shift();
+		return true;
 	}
-	return index;
+	else{
+		return false;
+  }
 }

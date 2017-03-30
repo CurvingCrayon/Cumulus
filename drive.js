@@ -381,8 +381,10 @@ function loadNextImage(){
 		var elem = imageQue[0][0];
 		imageLoading = true;
 		elem.setAttribute("onload","imageLoading = false;loadNextImage();");
+		elem.setAttribute("onerror","this.src='images/brokenFile.png';imageLoading = false;loadNextImage();");
 		var src = imageQue[0][1];
 		elem.src = src;
+		elem.alt = src;
 		imageQue.shift();
 		return true;
 	}

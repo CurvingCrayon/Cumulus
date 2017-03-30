@@ -37,9 +37,8 @@ function createTile(name,type,contentLink,service){
 		break;
 	}
 	contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
-	$(contentHolder.parentElement.parentElement.children[0]).on({
-		"dblclick": toggleDialog
-	});
+	contentHolder.parentElement.parentElement.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event){toggleDialog(event);}");
+	contentHolder.parentElement.parentElement.children[0].setAttribute("ondblclick","if(checkTarget(event){toggleDialog(event);}");
 }
 function menu(event){
 	targ = event.target;

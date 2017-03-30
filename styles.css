@@ -1,8 +1,3 @@
-html, body{
-	margin: 0;
-	height: 100%;
-	font-family: 'Open Sans', sans-serif;
-}
 #fileInput {
 	height: 200px;
 	width: 200px;
@@ -53,19 +48,6 @@ html, body{
 	height: 100%;
 	overflow-y: hidden;
 }
-::-webkit-scrollbar {
-    width: 12px;
-	height: 6px;
-	
-}
- 
-::-webkit-scrollbar-track {
-	background-color: rgba(240,240,240,0.6);
-}
- 
-::-webkit-scrollbar-thumb {
-	background-color: rgba(200,200,200,0.9);
-}
 .openIcon {
 	height: 30px;
 }
@@ -91,6 +73,7 @@ html, body{
 	padding-left: 12.5%;
 	margin-right: auto;
 	vertical-align: bottom;
+	z-index: 2;
 }
 button {
 	margin-left:auto;
@@ -99,22 +82,25 @@ button {
 
 .tabButton {
 	font-size: 16px;
+	width: 90%;
+	margin-left: 5%;
+	margin-right: 5%;
+	text-align: center;
 }
 .fileOption{
 	display: inline-block;
-	margin-left: 20px;
-	margin-right: 20px;
-/*	border: 1px solid black;*/
+	margin: 20px;
+/*	border: 1px solid gray;*/
 	padding: 20px;
 	vertical-align: middle;
 	text-align: center;
 	min-width: 200px;
 	cursor: pointer;
 	border-radius: 5px;
-	box-shadow: 0 0 10px rgba(0,0,0,0.5);;
+	box-shadow: 0 0 1px gray;
 }
 .fileOptionThumb{
-	height: 160px;
+	max-height: 160px;
 	max-width: 160px;
 }
 .fileOptionName{
@@ -164,4 +150,15 @@ button {
 #deleteDialogIcon{
 	float: left;
 	margin: 12px 12px 20px 0;
+}
+#fileSearchBar{
+	height: 100%;
+}
+.ui-autocomplete {
+	max-height: 100px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+.profileIcon{
+	z-index: 3;
 }

@@ -3,8 +3,10 @@
 <head>
 	<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 	<!--SCRIPTS-->
-<!--JQUERY-->
+
 	<link rel="stylesheet" type="text/css" href="styles.css" />
+	<link rel="stylesheet" type="text/css" href="generalStyles.css" />
+	<!--JQUERY-->
 	<link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
 	<script src="jquery-3.1.1.min.js"></script>
 	<script src="../res/jquery-ui.min.js"></script>
@@ -17,7 +19,7 @@
 	<script type="text/javascript" src="workspace.js"></script>
 
 <!--GOOGLE-->
-	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<script src="https://apis.google.com/js/client:platform.js" async defer></script>
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
 	<meta name="google-signin-client_id" content="905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercontent.com">
 	<script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
@@ -31,9 +33,9 @@
 
 	
 </head>
-<body oncontextmenu="menu(event);" onclick="checkClick(event);">
+<body oncontextmenu="//menu(event);" onclick="checkClick(event);">
 	<ul id="driveFileMenu">
-		<li onclick="confirmDelete(deleteFileOption);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
+		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
 			<li><div>Select all</div></li>
 			<li><div>Select all but this</div></li>
@@ -48,22 +50,25 @@
 	<div id="tabHolder">
 		<!-- GOOGLE DRIVE TAB -->
         <div class="tab" data-open="false">
-			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)">Authorize</button>
-			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>
+			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Log In</button>
+<!--			<div class="g-signin2" data-onsuccess="onSignin"></div>-->
+<!--			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>-->
+			<button id="driveLogout" class="tabButton" onclick="driveLogout();">Logout</button>
 			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File</button>
-            <img class="tabIcon" src="images/product128.png" />
+			<div class="tabIconHolder" id="driveTabHolder"><img class="tabIcon" id="driveIcon" src="images/product128.png" /></div>
+<!--            <img class="tabIcon" src="images/product128.png" />-->
         </div>
 		<!-- DROPBOX TAB -->
 		<div class="tab" data-open="false">
 			<button id="dropboxAuth" class="tabButton">Authorize</button>
 			<button id="dropboxLogout" class="tabButton">Logout</button>
 			<button id="dropboxSelectFile" class="tabButton" onclick="Dropbox.choose(getDropOptions())">Select File</button>
-            <img class="tabIcon" src="images/product128.png" />
+            <img class="tabIcon" src="images/drop.png" />
         </div>
 		<!-- ONEDRIVE TAB -->
 		<div class="tab" data-open="false">
 			<button class="tabButton" onClick="launchOneDrivePicker()">Open from OneDrive</button>
-            <img class="tabIcon" src="images/product128.png" />
+            <img class="tabIcon" src="images/driveCloud.png" />
         </div>
     </div>
 	

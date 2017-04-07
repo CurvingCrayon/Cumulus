@@ -29,6 +29,8 @@ $(function(){
 	$(".fileOption").on("click",fileClicked);
 	var dropButton = Dropbox.createChooseButton(getDropOptions());
 	//$(document.getElementsByClassName("tab")[1].children[1]).after(dropButton);
+	
+
 });
 
 var content;
@@ -202,7 +204,6 @@ function toggleTab(event){
 		$(elem).animate({"top":"0px"},tabSpeed);
 		elem.setAttribute("data-open","true");
 	}
-	console.log("TOggle");
 }
 function toggleDialog(event){
 	var elem = event.currentTarget;

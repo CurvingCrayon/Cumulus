@@ -144,26 +144,7 @@ function createDialog(){
 	openDialogs.push(dialog);
 	return dialog;
 }
-function searchFile(query){
-	if(driveDialogOpen){
-		var request = {
-			//"pageSize": 10,
-			"corpus": "user",
-			"spaces": "drive",
-			"quotaUser": createString(5),
-			"q": "'root' in parents and name contains '" + query + "'", //Search query
-			"orderBy": "name",
-			"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
-			//Others include: webViewLink, webContentLink, nextPageToken
-		};
-		clearFileSelections();
-		loadFileSelections(request);
-	}
-	else{
-		console.error("searchFile() called whilst dialog is closed");
-	}
-	
-}
+
 function refreshFiles(){
 	
 }
@@ -306,16 +287,14 @@ function GoogleDialog(id){ //JavaScript class
 	var searchBar = document.createElement("INPUT");
 	searchBar.type = "text";
 	searchBar.className = "fileSearchBar";
-	searchBar.setAttribute("onkeypress","if(checkEnter(event)){searchFile(this.value);}");
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"'); openDialogs[dialogIndex].searchFile(this.value);}");
 	searchBar.setAttribute("onmousedown","event.stopPropagation();"); //Stops dragging from the searchbar
 	searchBar.placeholder = "Search for file..."
 	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
 	
 	var searchButton = document.createElement("BUTTON");
 //ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
-	$(searchBar).autocomplete({
-		"source": this.fileNames
-	});
+	
 		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 		fileSelector.parentNode.setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 	var globalThis = this;
@@ -327,6 +306,10 @@ function GoogleDialog(id){ //JavaScript class
 	this.fileOptions = [];
 	this.fileNames = [];
 	this.selectedFiles = [];
+	
+	$(searchBar).autocomplete({
+		"source": globalThis.fileNames
+	});
 	
 	this.createGoogleTile = function(fileObj){
 		var fileOption = document.createElement("DIV");
@@ -380,6 +363,7 @@ function GoogleDialog(id){ //JavaScript class
 			for(var fileNum = 0; fileNum < files.length; fileNum++){
 				var file = files[fileNum];
 				globalThis.createGoogleTile(file);
+				globalThis.fileNames.push(file.name);
 			}	
 			loadNextImage(); //This function is self recurring
 		}
@@ -391,21 +375,31 @@ function GoogleDialog(id){ //JavaScript class
 		request.execute(globalThis.handleResponse);
 	}
 	this.updateOpenFileButton = function(numFiles){
-		if(numFiles == undefined){
-			numFiles = 0;
+		if(globalThis.numFiles == undefined){
+			globalThis.numFiles = 0;
 		}
 		globalThis.open.innerHTML = "Open File(s) - " + String(numFiles) + " Selected"
 
 	}
+	this.searchFile = function(query){
+		var request = {
+				//"pageSize": 10,
+			"corpus": "user",
+			"spaces": "drive",
+			"quotaUser": createString(5),
+			"q": "'root' in parents and name contains '" + query + "'", //Search query
+			"orderBy": "name",
+			"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
+			//Others include: webViewLink, webContentLink, nextPageToken
+		};
+		globalThis.clearFileSelections();
+		globalThis.loadFileSelections(request);
+	}
+
 	this.clearFileSelections = function(){ //Clears all the files from the file selector dialog
-		if(driveDialogOpen){
-			fileNames = [];
-			//ID ERROR
-			globalThis.file.innerHTML = "";
-		}
-		else{
-			console.error("clearFileSelctions called whilst dialog is not open")
-		}
+		globalThis.fileNames = [];
+		//ID ERROR
+		globalThis.file.innerHTML = "";
 	}
 	
 }
@@ -415,6 +409,7 @@ function findDialog(id){
 		if(openDialogs[dialogNum].id === id){
 			index = dialogNum;
 		}
+	}
     return index;
 }
 
@@ -432,5 +427,5 @@ function loadNextImage(){
 	}
 	else{
 		return false;
-  }
+  	}
 }

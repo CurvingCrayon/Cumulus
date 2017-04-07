@@ -29,6 +29,8 @@ $(function(){
 	$(".fileOption").on("click",fileClicked);
 	var dropButton = Dropbox.createChooseButton(getDropOptions());
 	//$(document.getElementsByClassName("tab")[1].children[1]).after(dropButton);
+	
+
 });
 
 var content;
@@ -194,7 +196,7 @@ function toggleTab(event){
 	var elem = event.currentTarget;
 	var enabled = elem.getAttribute("data-open");
 	$(elem).stop(true);
-	if(enabled === "true"){
+	if(event.type === "mouseleave"){
 		$(elem).animate({"top":tabOffset},tabSpeed);
 		elem.setAttribute("data-open","false");
 	}
@@ -327,15 +329,15 @@ function deselectAllFiles(event){
 }
 function activeFileStyle(){
 	return {
-		"border": "4px solid" + mainColor,
-		"padding": "16px",
+		"border": "2px solid" + mainColor,
+		"padding": "8px",
 		"backgroundColor": semiMainColor
 	}
 }
 function inactiveFileStyle(){
 	return {
 		"border": "none",
-		"padding": "20px",
+		"padding": "10px",
 		"backgroundColor": "rgba(0,0,0,0)"
 	}
 }

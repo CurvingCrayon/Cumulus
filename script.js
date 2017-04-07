@@ -3,6 +3,7 @@ var tabOffset= "-100px";
 var mainColor = "#FFCC00";
 var semiMainColor = "rgba(255,204,0,0.3)";
 $(function(){
+	dropboxInit();
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object
 	$("#driveFileMenu").menu();
@@ -27,12 +28,25 @@ $(function(){
 		}
 	});
 	$(".fileOption").on("click",fileClicked);
-	var dropButton = Dropbox.createChooseButton(getDropOptions());
+	var dropButton = Dropbox.createChooseButton(getDropboxOptions());
 	//$(document.getElementsByClassName("tab")[1].children[1]).after(dropButton);
 	
 
 });
-
+function httpPostAsync(theUrl, callback,header){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function() { 
+		if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+			callback(xmlHttp.responseText);
+		}
+		else{
+			callback(false);
+		}
+	}
+	xmlHttp.open("POST", theUrl, true); // true for asynchronous 
+	xmlHttp.setRequestHeader(header[0],header[1]);
+	xmlHttp.send(null);
+}
 var content;
 function handleDrop(event){
 	event.stopPropagation();

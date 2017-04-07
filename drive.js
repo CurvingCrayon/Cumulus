@@ -37,7 +37,7 @@ var standardRequest = {
  }
 
 function checkAuth() {
-	console.log("checking auth...");
+	console.log("Checking Google Drive auth...");
 gapi.auth.authorize(
 	
   {
@@ -67,9 +67,12 @@ function driveLogout(){
 	googleInfo = {};
 }
 function handleAuthResult(authResult) {
-	console.log(authResult);
+	
 	if (authResult && !authResult.error) {
 	  // Hide auth UI, then load client library.
+		console.groupCollapsed("Google Drive successfully authorized.");
+		console.log(authResult);
+		console.groupEnd();
 		$("#driveAuth").hide();
 		$("#driveSelectFile").show();
 		$("#driveLogout").show();
@@ -80,6 +83,9 @@ function handleAuthResult(authResult) {
 	} else {
 	  // Show auth UI, allowing the user to initiate authorization by
 	  // clicking authorize button.
+		console.groupCollapsed("Google Drive unsuccessful.");
+		console.log(authResult);
+		console.groupEnd();
 		$("#driveAuth").show();
 		$("#driveSelectFile").hide();
 		$("#driveLogout").hide();

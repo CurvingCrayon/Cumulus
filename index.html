@@ -25,6 +25,7 @@
 	<script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
 <!--DROPBOX-->
 	<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="5eyfnab5yv1ei5r"></script>
+	<script type="text/javascript" src="/dropbox/dropbox-unofficial/dropbox.js" id="dropboxjs" data-app-key="5eyfnab5yv1ei5r"></script>
 	
 	
 <!-- ONEDRIVE -->
@@ -61,9 +62,9 @@
         </div>
 		<!-- DROPBOX TAB -->
 		<div class="tab" data-open="false">
-			<button id="dropboxAuth" class="tabButton">Authorize</button>
-			<button id="dropboxLogout" class="tabButton">Logout</button>
-			<button id="dropboxSelectFile" class="tabButton" onclick="Dropbox.choose(getDropOptions())">Select File</button>
+			<button id="dropboxAuth" onclick="dropboxLogin(this);" class="tabButton">Log In</button>
+			<button id="dropboxLogout" onclick="dropboxLogout();" class="tabButton">Logout</button>
+			<button id="dropboxSelectFile" class="tabButton" onclick="/*Dropbox.choose(getDropOptions())*/">Select File</button>
             <img class="tabIcon" src="images/drop.png" />
         </div>
 		<!-- ONEDRIVE TAB -->

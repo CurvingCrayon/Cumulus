@@ -25,15 +25,19 @@
 	<script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
 <!--DROPBOX-->
 	<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="5eyfnab5yv1ei5r"></script>
+	<script type="text/javascript" src="/dropbox/dropbox-unofficial/dropbox.js" id="dropboxjs" data-app-key="5eyfnab5yv1ei5r"></script>
 	
 	
 <!-- ONEDRIVE -->
 	<script type="text/javascript" src="https://js.live.net/v7.0/OneDrive.js"></script>
 	
-
-	
+		<!--PDF RENDERER-->
+		<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+		
+		
 </head>
 <body oncontextmenu="//menu(event);" onclick="checkClick(event);">
+	
 	<ul id="driveFileMenu">
 		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
@@ -49,7 +53,7 @@
 
 	<div id="tabHolder">
 		<!-- GOOGLE DRIVE TAB -->
-        <div class="tab" data-open="false">
+        <div class="tab" id="driveTab" data-open="false">
 			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Log In</button>
 <!--			<div class="g-signin2" data-onsuccess="onSignin"></div>-->
 <!--			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>-->
@@ -59,15 +63,18 @@
 <!--            <img class="tabIcon" src="images/product128.png" />-->
         </div>
 		<!-- DROPBOX TAB -->
-		<div class="tab" data-open="false">
-			<button id="dropboxAuth" class="tabButton">Authorize</button>
-			<button id="dropboxLogout" class="tabButton">Logout</button>
-			<button id="dropboxSelectFile" class="tabButton" onclick="Dropbox.choose(getDropOptions())">Select File</button>
-            <img class="tabIcon" src="images/drop.png" />
+		<div class="tab" id="dropboxTab" data-open="false">
+			<button id="dropboxLogin" onclick="dropboxLogin(this);" class="tabButton">Log In</button>
+			<button id="dropboxLogout" onclick="dropboxLogout();" class="tabButton">Logout</button>
+			<button id="dropboxSelectFile" class="tabButton" onclick="previewDropboxFiles();">Select File</button>
+			<div class="iconTabHolder" id="dropboxTabHolder">
+				<img class="tabIcon" id="dropboxIcon" src="images/drop.png" />
+			</div>
         </div>
 		<!-- ONEDRIVE TAB -->
-		<div class="tab" data-open="false">
+		<div class="tab" id="onedriveTab" data-open="false">
 			<button class="tabButton" onClick="launchOneDrivePicker()">Open from OneDrive</button>
+			
             <img class="tabIcon" src="images/driveCloud.png" />
         </div>
     </div>

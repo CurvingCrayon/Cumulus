@@ -161,7 +161,7 @@ function DropboxDialog(id){
 //ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
 	
 		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-		fileSelector.parentNode.setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		fileSelector.parentNode.setAttribute("ondblclick","toggleDialog(event);");
 	var globalThis = this;
 	this.id = id;
 	this.file = fileSelector;
@@ -244,7 +244,6 @@ function DropboxDialog(id){
 					resp.metadata.viewLink = resp.link;
 					var expiryTime = new Date();
 					expiryTime.setTime(expiryTime.valueOf() + 12600000);
-					console.info(expiryTime);
 					resp.metadata.linkExpiry = expiryTime;
 					globalThis.createDropboxTile(resp.metadata);
 				});
@@ -312,14 +311,11 @@ function openSelectedDropboxFiles(event){
 		for(var fileNum in selectedFiles){
 			//selectedFiles[fileNum][0].getAttribute("data-id")
 			var file = selectedFiles[fileNum][0];
-			console.info(file);
 			var name = file.getAttribute("data-name");
 			var type = file.getAttribute("data-mimetype");
 			var expiry = file.getAttribute("data-linkExpiry");
 			var time = new Date();
 			var expiry = new Date(Number(expiry));
-			console.info(expiry);
-			console.info(time);
 			var link = "";
 			if(time < expiry){
 				link = file.getAttribute("data-link");

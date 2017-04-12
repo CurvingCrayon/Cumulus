@@ -2,11 +2,26 @@ var menuOpen = false;
 var menuTarget = false;
 var menuIds = ["driveFileMenu"];
 function createTile(name,type,contentLink,service){
+	switch(type){
+		case "application/vnd.google-apps.document":
+			type = "doc";
+		break;
+			
+		case "application/vnd.google-apps.folder":
+			type = "folder";
+		break;
+			
+		case "application/vnd.google-apps.presentation":
+			type = "powerpoint";
+		break;
+			
+	}
 	var tile = document.createElement("DIV");
 	tile.title = name+"."+type;
 	$(tile).dialog({
 		
 	});
+	
 	var contentHolder = document.createElement("DIV");
 	contentHolder.className = "contentHolder";
 	var contentFrame = document.createElement("IFRAME");

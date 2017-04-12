@@ -1,10 +1,13 @@
 var tabSpeed = "fast";
 var tabOffset= "-100px";
 var mainColor = "#FFCC00";
-var semiMainColor = "rgba(255,204,0,0.3)";
+var semiMainColor = "rgba(255,240,179,0.9)";
 $(function(){
+	dropboxInit();
 	$(".tile").dialog(); //Defines class as jquery UI object
 	$("button").button(); //Defines tag as jquery UI object
+	$("#driveSelectFile").button("disable"); //Disables google drive open file button
+	$("#dropboxSelectFile").button("disable"); //Disables dropbox open file button
 	$("#driveFileMenu").menu();
 	$("#driveFileMenu").hide();
 	$("#fileSelector").dialog({ //Defines ID as jquery UI object
@@ -27,10 +30,49 @@ $(function(){
 		}
 	});
 	$(".fileOption").on("click",fileClicked);
-	var dropButton = Dropbox.createChooseButton(getDropOptions());
+	var dropButton = Dropbox.createChooseButton(getDropboxOptions());
 	//$(document.getElementsByClassName("tab")[1].children[1]).after(dropButton);
-});
+	
 
+});
+function httpPostAsync(url, callback, header){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function() { 
+		if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+			callback(xmlHttp.responseText);
+		}
+		else{
+			callback(false);
+		}
+	}
+	xmlHttp.open("POST", url, true); // true for asynchronous 
+	if(typeof header !== "undefined"){ //If the header parameter is given
+		xmlHttp.setRequestHeader(header[0],header[1]);
+	}
+	xmlHttp.send(null);
+}
+function httpGetAsync(url, callback, body, header){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function(){ 
+		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+			callback(xmlHttp.responseText);
+		}
+		else{
+			callback(false);
+		}
+	}
+	xmlHttp.open("GET", url, true); // true for asynchronous 
+	if(typeof header !== "undefined"){ //If the header parameter is given
+		xmlHttp.setRequestHeader(header[0],header[1]);
+	}
+	if(typeof body !== "undefined"){ //If a body parameter is given
+		body = JSON.stringify(body); //Turn the body object into a string
+		xmlHttp.send(body);
+	}
+	else{
+		xmlHttp.send(null);
+	}
+}
 var content;
 function handleDrop(event){
 	event.stopPropagation();
@@ -194,7 +236,7 @@ function toggleTab(event){
 	var elem = event.currentTarget;
 	var enabled = elem.getAttribute("data-open");
 	$(elem).stop(true);
-	if(enabled === "true"){
+	if(event.type === "mouseleave"){
 		$(elem).animate({"top":tabOffset},tabSpeed);
 		elem.setAttribute("data-open","false");
 	}
@@ -253,9 +295,24 @@ function fileClicked(event){
 	var elem = event.currentTarget;
 	var allFiles = elem.parentNode.children; //All the files currently in the file window
 	var parentId = elem.parentNode.getAttribute("id");
-	var dialogIndex = findDialog(parentId);
+	var service = elem.parentNode.getAttribute("data-service");
+	var arrDialogs;
+	switch(service){
+		case "dropbox":
+			arrDialogs = openDropboxDialogs;
+		break;
+			
+		case "googledrive":
+			arrDialogs = openDialogs;
+		break;
+			
+		default:
+			console.error("findDialogs given invalid service name: "+service);
+		break;
+	}
+	var dialogIndex = findDialog(parentId,service);
 	if(dialogIndex != -1){
-		var selectedFiles = openDialogs[dialogIndex].selectedFiles;
+		var selectedFiles = arrDialogs[dialogIndex].selectedFiles;
 	}
 	else{
 		console.error("Dialog Index not found for clicked file.")
@@ -306,20 +363,35 @@ function fileClicked(event){
 		selectedFiles.push([elem,$(elem).attr("data-id")]);
 		$(elem).css(activeFileStyle());
 	}
-	openDialogs[dialogIndex].selectedFiles = selectedFiles;
-	openDialogs[dialogIndex].updateOpenFileButton(selectedFiles.length);
+	arrDialogs[dialogIndex].selectedFiles = selectedFiles;
+	arrDialogs[dialogIndex].updateOpenFileButton(selectedFiles.length);
 }
 function deselectAllFiles(event){
 	var elem = event.currentTarget;
 	var parentId = elem.getAttribute("id");
+	var parentService = elem.getAttribute("data-service");
+	var arrDialogs;
+	switch(parentService){
+		case "dropbox":
+			arrDialogs = openDropboxDialogs;
+		break;
+			
+		case "googledrive":
+			arrDialogs = openDialogs;
+		break;
+			
+		default:
+			console.error("findDialogs given invalid service name: "+service);
+		break;
+	}
 	var allFiles = elem.children;
 	for(var fileNum = 0; fileNum < allFiles.length; fileNum++){
 		$(allFiles[fileNum]).css(inactiveFileStyle());
 	}
-	var dialogIndex = findDialog(parentId);
+	var dialogIndex = findDialog(parentId,parentService);
 	if(dialogIndex != -1){
-		openDialogs[dialogIndex].updateOpenFileButton(0);
-		openDialogs[dialogIndex].selectedFiles = [];
+		arrDialogs[dialogIndex].updateOpenFileButton(0);
+		arrDialogs[dialogIndex].selectedFiles = [];
 	}
 	else{
 		console.error("Dialog Index not found for deselecting files.")
@@ -327,16 +399,28 @@ function deselectAllFiles(event){
 }
 function activeFileStyle(){
 	return {
-		"border": "4px solid" + mainColor,
-		"padding": "16px",
+		"border": "2px solid" + mainColor,
+		"padding": "8px",
 		"backgroundColor": semiMainColor
 	}
 }
 function inactiveFileStyle(){
 	return {
 		"border": "none",
-		"padding": "20px",
-		"backgroundColor": "rgba(0,0,0,0)"
+		"padding": "10px",
+		"backgroundColor": "rgba(255,255,255,0.9)"
+	}
+}
+function activeTabStyle(){
+	return{
+		"border-color": "#0089ff",
+		"box-shadow": "0 0 7px #0089ff"
+	}
+}
+function inactiveTabStyle(){
+	return{
+		"border-color": "gray",
+		"box-shadow": "0 0 7px black"
 	}
 }
 function searchArray(arr, obj){
@@ -375,4 +459,16 @@ function checkTarget(event, elements, callback){ //This function checks that a c
 		}
 	}
 	return event.target == event.currentTarget;
+}
+function subtractString(original,remover){
+	var pos = original.search(remover);
+	var out = ""
+	if(pos == -1){
+		console.error("subtractString passed bad strings: " + original + " " + remover);
+		out = "ERROR";
+	}
+	else{
+		out = original.substr(0,pos) + original.substr(pos+remover.length, original.length -1);
+	}
+	return out;
 }

@@ -37,7 +37,6 @@
 		
 </head>
 <body oncontextmenu="//menu(event);" onclick="checkClick(event);">
-	
 	<ul id="driveFileMenu">
 		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
@@ -78,7 +77,9 @@
             <img class="tabIcon" src="images/driveCloud.png" />
         </div>
     </div>
-	
+		<object data="/testDocuments/document.pdf" type="application/pdf">
+			<embed src="/testDocuments/document.pdf" type="application/pdf" />
+		</object>
 	<div id="notifier">
 		<div id="noteHolder">
 			

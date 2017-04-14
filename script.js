@@ -73,6 +73,19 @@ function httpGetAsync(url, callback, body, header){
 		xmlHttp.send(null);
 	}
 }
+//http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf
+function getData(url){
+	if(url == undefined){
+		url = "/testDocuments/document.pdf";
+	}
+	httpGetAsync(url,function(data){
+		if(data != false){
+			glob = data;
+			//window.open("data:application/pdf;base64, " + data, '', 'height=650,width=840');
+
+		}
+	});
+}
 var content;
 function handleDrop(event){
 	event.stopPropagation();

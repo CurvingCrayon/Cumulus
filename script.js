@@ -78,10 +78,54 @@ function getData(url){
 	if(url == undefined){
 		url = "/testDocuments/document.pdf";
 	}
-	httpGetAsync(url,function(data){
+	httpGetFile(url,function(data){
 		if(data != false){
 			glob = data;
 			//window.open("data:application/pdf;base64, " + data, '', 'height=650,width=840');
+
+		}
+	});
+}
+function httpGetPdf(url, callback, body, header){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function(){ 
+		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
+			callback(xmlHttp.response);
+		}
+		else{
+			callback(false);
+		}
+	}
+	xmlHttp.responseType = "blob";
+	xmlHttp.open("GET", url, true); // true for asynchronous 
+	if(typeof header !== "undefined"){ //If the header parameter is given
+		xmlHttp.setRequestHeader(header[0],header[1]);
+	}
+	xmlHttp.send();
+}
+//http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf
+function getData(url){
+	if(url == undefined){
+		url = "/testDocuments/document.pdf";
+	}
+	httpGetPdf(url,function(data){
+		if(data != false){
+			glob = data;
+			var blob = new Blob([data],{"type":"application/pdf"});
+			var newURL = URL.createObjectURL(blob);
+			glob7 = newURL;
+			PDFJS.getDocument(newURL).then(function (pdf) {
+			pdf.getPage(1).then(function (page) {
+				var scale = 1;
+				var viewport = page.getViewport(scale);
+				var canvas = document.getElementById("the-canvas");
+				var context = canvas.getContext("2d");
+				canvas.height = viewport.height;
+				canvas.width = viewport.width;
+				page.render({ canvasContext: context, viewport: viewport });
+			});
+		  });
+			//window.open("data:application/pdf;base64, " + data, "", 'height=650,width=840');
 
 		}
 	});
@@ -159,27 +203,14 @@ function handleFile(event){
 	})(files[0]);
 	reader.onload = (function(theFile) {
 		return function(e) {
-			switch(fileType){
-				case "text/plain":
-					generate.text(reader.result);
-				break;
-
-				default:
-					generate.image(reader.result);
-				break;
-			}
+			glob2 = reader.result;
+			glob3 = new Uint8Array(reader.result);
+			
 			notify("load",[fileType,reader.name]);
 		};
 	})(files[0]);
-	switch(fileType){
-		case "text/plain":
-			reader.readAsText(files[0]);
-		break;
-
-		default:
-			reader.readAsDataURL(files[0]);
-		break;
-	}
+	//reader.readAsText(files[0]);
+	reader.readAsArrayBuffer(files[0]);
 }
 function getProgress(event){
 	if(event.lengthComputable){
@@ -303,7 +334,7 @@ function toggleDialog(event){
 		}
 	}	
 }
-//This handles file selection for Google Drive
+//This handles fileOptions being clicked
 function fileClicked(event){
 	var elem = event.currentTarget;
 	var allFiles = elem.parentNode.children; //All the files currently in the file window

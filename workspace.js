@@ -2,6 +2,7 @@ var menuOpen = false;
 var menuTarget = false;
 var menuIds = ["driveFileMenu"];
 function createTile(name,type,contentLink,service){
+	//Name generation:
 	switch(type){
 		case "application/vnd.google-apps.document":
 			type = "doc";
@@ -18,17 +19,34 @@ function createTile(name,type,contentLink,service){
 	}
 	var tile = document.createElement("DIV");
 	tile.title = name+"."+type;
+	//Create tile
 	$(tile).dialog({
 		
 	});
 	
+	//Content rendering:
 	var contentHolder = document.createElement("DIV");
 	contentHolder.className = "contentHolder";
-	var contentFrame = document.createElement("IFRAME");
-	contentFrame.className = "contentFrame";
-	contentFrame.src = contentLink;
+	switch(type){
+		case "pdf":
+		//Object version: (incomplete)
+			//var contentFrame = document.createElement("IFRAME");
+			//contentFrame.className = "contentFrame";
+			//contentFrame.src = contentLink;
+		//PDFJS version:
+			var contentFrame = document.createElement("CANVAS");
+			contentFrame.className = "contentFrame";
+		break;
+			
+	}
+//	var contentFrame = document.createElement("IFRAME");
+//	contentFrame.className = "contentFrame";
+//	contentFrame.src = contentLink;
 	contentHolder.appendChild(contentFrame);
 	tile.appendChild(contentHolder);
+	console.info(contentLink);
+	createPdf(contentLink,contentFrame); //Used for PDFJS
+	//Icon selection:
 	var icon = document.createElement("IMG");
 	icon.className = "fileIcon";
 	switch(service){
@@ -98,4 +116,27 @@ function checkClick(event){
 		}
 	}
 
+}
+function createPdf(src,elem){
+	httpGetPdf(src,function(data){
+		if(data != false){
+			newUrl = blobUrlPdf(data);
+			PDFJS.getDocument(newUrl).then(function(newPdf){
+				newPdf.getPage(1).then(function(newPage){
+					var scale = 1;
+					var viewport = newPage.getViewport(scale);
+					var context = elem.getContext("2d");
+					newPage.render({ 
+						canvasContext: context, 
+						viewport: viewport
+					});
+				});
+			});
+		}
+	});
+}
+function blobUrlPdf(data){
+	var blob = new Blob([data],{"type":"application/pdf"});
+	var newUrl = URL.createObjectURL(blob);
+	return newUrl;
 }

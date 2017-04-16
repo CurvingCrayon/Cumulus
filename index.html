@@ -37,6 +37,7 @@
 		
 </head>
 <body oncontextmenu="//menu(event);" onclick="checkClick(event);">
+	<input type="file" onchange="handleFile(event)" />
 	<ul id="driveFileMenu">
 		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
@@ -80,6 +81,8 @@
 		<object data="/testDocuments/document.pdf" type="application/pdf">
 			<embed src="/testDocuments/document.pdf" type="application/pdf" />
 		</object>
+	
+<canvas id="the-canvas"></canvas>
 	<div id="notifier">
 		<div id="noteHolder">
 			

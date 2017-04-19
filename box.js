@@ -152,16 +152,17 @@ function DropboxDialog(id){
 	var searchBar = document.createElement("INPUT");
 	searchBar.type = "text";
 	searchBar.className = "fileSearchBar";
-	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"',dropbox); openDialogs[dialogIndex].searchFile(this.value);}");
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"','dropbox'); openDropboxDialogs[dialogIndex].searchFile(this.value);}");
 	searchBar.setAttribute("onmousedown","event.stopPropagation();"); //Stops dragging from the searchbar
+	searchBar.setAttribute("ondblclick","event.stopPropagation();"); //Stops collapsing from the searchbar
 	searchBar.placeholder = "Search for file..."
 	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
 	
 	var searchButton = document.createElement("BUTTON");
 //ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
 	
-		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-		fileSelector.parentNode.setAttribute("ondblclick","toggleDialog(event);");
+		fileSelector.parentNode.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		fileSelector.parentNode.children[0].setAttribute("ondblclick","toggleDialog(event);");
 	var globalThis = this;
 	this.id = id;
 	this.file = fileSelector;
@@ -171,7 +172,7 @@ function DropboxDialog(id){
 	this.fileOptions = [];
 	this.fileNames = [];
 	this.selectedFiles = [];
-	
+	this.currentParent = "";
 	$(searchBar).autocomplete({
 		"source": globalThis.fileNames
 	});
@@ -194,9 +195,11 @@ function DropboxDialog(id){
 		if(fileObj[".tag"] === "folder"){
 			fileOption.setAttribute("data-mimetype","folder");
 			fileOption.className += " fileOptionFolder";
+			fileOption.setAttribute("ondblclick","openFolder(event)");
 		}
 		else{
 			fileOption.setAttribute("data-mimetype",fileName.split(".")[fileName.split(".").length-1]);
+			fileOption.setAttribute("ondblclick","refreshImage(event);");
 
 		}
 		fileOption.setAttribute("data-name",fileName.split(".")[0]);
@@ -229,30 +232,32 @@ function DropboxDialog(id){
 		fileName.className = "fileOptionName";
 		fileName.innerHTML = fileObj.name;
 		fileOption.onclick = fileClicked;
-		fileOption.ondblclick = openFolder;
 		fileOption.appendChild(fileThumb);
 		fileOption.appendChild(fileName);
 		globalThis.file.append(fileOption);
+		return fileOption;
 	}
 	this.handleResponse = function(resp) {
 		console.log(resp);
-		var files = resp.entries;
+		var files = (resp.entries || resp.matches); //Allows for search responses
 		for(var fileNum = 0; fileNum < files.length; fileNum++){
+			var newTile;
 			if(files[fileNum][".tag"] !== "folder"){
-				var path = resp.entries[fileNum].path_lower;
+				var path = files[fileNum].path_lower;
 				dropbox("files/get_temporary_link",{"path":path},function(resp){
 					resp.metadata.viewLink = resp.link;
 					var expiryTime = new Date();
 					expiryTime.setTime(expiryTime.valueOf() + 12600000);
 					resp.metadata.linkExpiry = expiryTime;
-					globalThis.createDropboxTile(resp.metadata);
+					newTile = globalThis.createDropboxTile(resp.metadata);
 				});
 			}
 			else{
 				files[fileNum].viewLink = "";
 				files[fileNum].linkExpiry = "";
-				globalThis.createDropboxTile(files[fileNum]);	
+				newTile = globalThis.createDropboxTile(files[fileNum]);	
 			}
+			globalThis.fileOptions.push(newTile);
 		}
 	};
 	this.loadFileSelections = function(path){
@@ -271,7 +276,13 @@ function DropboxDialog(id){
 
 	}
 	this.searchFile = function(query){
-	
+		globalThis.clearFileSelections;
+		dropbox("files/search",{
+				"path":"",
+				"query":query
+			},
+			globalThis.handleResponse
+		);
 	}
 
 	this.clearFileSelections = function(){ //Clears all the files from the file selector dialog
@@ -325,7 +336,7 @@ function openSelectedDropboxFiles(event){
 			}
 			
 			//createTile(name,type,link,"dropbox");
-			createTile(name,type,"","dropbox");
+			createTile(name,type,link,"dropbox");
 		}
 	}
 	else{

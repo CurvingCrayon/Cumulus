@@ -139,7 +139,7 @@ function loadGoogleImage(src){
 	queImage(newImg, src, function(){
 		$(newImg).animate({"opacity":1});
 	});
-	loadNextImage();
+	//loadNextImage();
 }
 function previewDriveFiles() {
 	var dialog = createDialog();
@@ -206,22 +206,12 @@ function openSelectedFiles(event){
 	if(dialogIndex != -1){ //If the dialog box is found
 		var selectedFiles = openDialogs[dialogIndex].selectedFiles;
 		for(var fileNum in selectedFiles){
-			var request = gapi.client.drive.files.get({
-				"fileId" : selectedFiles[fileNum][0].getAttribute("data-id"),
-				"fields" : "webViewLink,name,mimeType"
-			});
-			batch.add(request);
-
+			var file = selectedFiles[fileNum][0];
+			var name = file.getAttribute("data-name");
+			var link = file.getAttribute("data-link");
+			var type = file.getAttribute("data-mimetype");
+			createTile(name, type, link, "googledrive");
 		}
-		batch.execute(function(map,response){
-			response = JSON.parse(response);
-			console.log(response);
-			globResponse = response;
-			for(var fileNum = 0; fileNum < response.length; fileNum++){ //Go through each file in the batch response
-				var file = response[fileNum].result;
-				createTile(file.name,file.mimeType,file.webViewLink,"googledrive");
-			}
-		});
 	}
 	else{
 		console.error("Dialog Index not found for opening files.");
@@ -297,16 +287,17 @@ function GoogleDialog(id){ //JavaScript class
 	var searchBar = document.createElement("INPUT");
 	searchBar.type = "text";
 	searchBar.className = "fileSearchBar";
-	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"',drive); openDialogs[dialogIndex].searchFile(this.value);}");
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].searchFile(this.value);}");
 	searchBar.setAttribute("onmousedown","event.stopPropagation();"); //Stops dragging from the searchbar
+	searchBar.setAttribute("ondblclick","event.stopPropagation();"); //Stops collapsing from the searchbar
 	searchBar.placeholder = "Search for file..."
 	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
 	
 	var searchButton = document.createElement("BUTTON");
 //ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
 	
-		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-		fileSelector.parentNode.setAttribute("ondblclick","toggleDialog(event);");
+		fileSelector.parentNode.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		fileSelector.parentNode.children[0].setAttribute("ondblclick","toggleDialog(event);");
 	var globalThis = this;
 	this.id = id;
 	this.file = fileSelector;
@@ -316,7 +307,7 @@ function GoogleDialog(id){ //JavaScript class
 	this.fileOptions = [];
 	this.fileNames = [];
 	this.selectedFiles = [];
-	
+	this.currentParent = "";
 	$(searchBar).autocomplete({
 		"source": globalThis.fileNames
 	});
@@ -325,32 +316,38 @@ function GoogleDialog(id){ //JavaScript class
 		var fileOption = document.createElement("DIV");
 		fileOption.setAttribute("data-id",fileObj.id);
 		fileOption.setAttribute("data-name",fileObj.name);
-		//globalThis.fileNames.push(fileObj.name); //Used for search bar suggestions
+		var link = createDriveLink(getFileId(fileObj.webViewLink));
+		fileOption.setAttribute("data-link",link);
 		if(fileObj.parents != undefined){
-			fileOption.setAttribute("datapath",fileObj.parents.join("/"));
+			fileOption.setAttribute("data-path",fileObj.parents.join("/"));
 		}
 		else{
-			fileOption.setAttribute("datapath","");
+			fileOption.setAttribute("data-path","");
 		}
 		fileOption.setAttribute("data-mimetype",fileObj.mimeType);
+		fileOption.setAttribute("ondrag","event.preventDefault()");
 		fileOption.className = "fileOption";
 
 		var fileThumb = document.createElement("IMG");
 		fileThumb.className = "fileOptionThumb";
-		
+		fileThumb.setAttribute("ondragstart","event.preventDefault();return false;")
 		if(typeof fileObj.thumbnailLink !== "undefined"){ //If the thumbnail for the file exists
 			fileThumb.src = "images/loading.gif";
 			queImage(fileThumb,fileObj.thumbnailLink);
 		}
 		else{
 			switch(fileObj.mimeType){
-				case "application/vnd.google-apps.folder":
+				case "application/vnd.google-apps.folder": //If its a folder
 					fileThumb.src = "images/folder.png";
 					fileOption.className += " fileOptionFolder";
+					fileOption.setAttribute("ondblclick","openFolder(event)");
+
 				break;
 
-				default:
+				default: //If its a file
 					fileThumb.src = "images/file.png";
+					fileOption.setAttribute("ondblclick","refreshImage(event)");
+
 				break;
 			}
 		}
@@ -361,18 +358,20 @@ function GoogleDialog(id){ //JavaScript class
 		fileName.className = "fileOptionName";
 		fileName.innerHTML = fileObj.name;
 		fileOption.onclick = fileClicked;
-		fileOption.ondblclick = openFolder;
 		fileOption.appendChild(fileThumb);
 		fileOption.appendChild(fileName);
 		globalThis.file.append(fileOption);
+		return fileOption;
 	}
 	this.handleResponse = function(resp) {
 		var files = resp.files;
+		console.info(files);
 		if (files && files.length > 0) {
 			for(var fileNum = 0; fileNum < files.length; fileNum++){
 				var file = files[fileNum];
-				globalThis.createGoogleTile(file);
-				globalThis.fileNames.push(file.name);
+				var newTile = globalThis.createGoogleTile(file);
+				globalThis.fileNames.push(file.name); //Create a running list of file names (for search bar)
+				globalThis.fileOptions.push(newTile); //Create a running list of the loaded tiles
 			}	
 			loadNextImage(); //This function is self recurring
 		}
@@ -453,4 +452,12 @@ function loadNextImage(){
 	else{
 		return false;
   	}
+}
+function getFileId(url){
+	var url = url.split("/");
+	var id = url[url.length-2];
+	return id;
+}
+function createDriveLink(id){
+	return "https://docs.google.com/viewer?srcid=" + id + "&pid=explorer&efh=false&a=v&chrome=false&embedded=true"; //Credit to Ben Bollard Schersten at http://www.benschersten.com/blog/2014/04/embedding-a-pdf-from-drive-into-a-blog/
 }

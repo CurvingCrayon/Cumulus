@@ -73,20 +73,7 @@ function httpGetAsync(url, callback, body, header){
 		xmlHttp.send(null);
 	}
 }
-//http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf
-function getData(url){
-	if(url == undefined){
-		url = "/testDocuments/document.pdf";
-	}
-	httpGetFile(url,function(data){
-		if(data != false){
-			glob = data;
-			//window.open("data:application/pdf;base64, " + data, '', 'height=650,width=840');
-
-		}
-	});
-}
-function httpGetPdf(url, callback, body, header){
+function httpGetFile(url, callback, body, header){
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function(){ 
 		if(xmlHttp.readyState == 4 && xmlHttp.status == 200){
@@ -108,7 +95,7 @@ function getData(url){
 	if(url == undefined){
 		url = "/testDocuments/document.pdf";
 	}
-	httpGetPdf(url,function(data){
+	httpGetFile(url,function(data){
 		if(data != false){
 			glob = data;
 			var blob = new Blob([data],{"type":"application/pdf"});
@@ -304,6 +291,7 @@ function toggleDialog(event){
 		}
 		numLoops++;
 	}
+
 	if(numLoops >= maxLoops){
 		console.error("toggleDialog could not find correct parent");
 	}
@@ -483,6 +471,9 @@ function searchArray(arr, obj){
 }
 function openFolder(event){
 	console.log(event.currentTarget.getAttribute("data-id"));
+}
+function refreshImage(event){
+	
 }
 function denyEvent(event){
 	event.stopPropagation();

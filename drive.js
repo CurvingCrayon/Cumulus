@@ -12,7 +12,6 @@ var appId = "905474582382";
 var SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/plus.login","https://www.googleapis.com/auth/plus.me"];
 
 
-var currentLevel = "root";
 
 var googleInfo = {};
 
@@ -139,7 +138,7 @@ function loadGoogleImage(src){
 	queImage(newImg, src, function(){
 		$(newImg).animate({"opacity":1});
 	});
-	//loadNextImage();
+	loadNextImage();
 }
 function previewDriveFiles() {
 	var dialog = createDialog();
@@ -279,9 +278,10 @@ function GoogleDialog(id){ //JavaScript class
 	//Open Selected Files Button
 	var openFiles = document.createElement("BUTTON");
 	openFiles.innerHTML = "Open File(s)"
-	openFiles.class = "driveOpenFiles";
+	
 	openFiles.setAttribute("onclick","openSelectedFiles(event);");
 	$(openFiles).button();
+	openFiles.className += " driveOpenFiles";
 	fileSelector.parentNode.children[0].children[0].appendChild(openFiles);
 	//Search Bar
 	var searchBar = document.createElement("INPUT");
@@ -294,8 +294,29 @@ function GoogleDialog(id){ //JavaScript class
 	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
 	
 	var searchButton = document.createElement("BUTTON");
-//ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
+	searchButton.innerHTML = "Search";
+	searchButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].searchFile(this.value);");
+	$(searchButton).button({
+		"icon": "ui-icon-search"
+	});
+	searchButton.className += " driveSearchButton";
+	fileSelector.parentNode.children[0].children[0].appendChild(searchButton);
 	
+	var upButton = document.createElement("BUTTON");
+	upButton.innerHTML = "Go Up A Level";
+	upButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].upLevel();");
+	$(upButton).button({
+		"icon": "ui-icon-arrowreturnthick-1-n",
+		"disabled": "true"
+	});
+	upButton.className += " driveUpButton";
+	fileSelector.parentNode.children[0].children[0].appendChild(upButton);
+	this.upButton = upButton;
+	
+	var breadCrumbs = document.createElement("h3");
+	breadCrumbs.className = "breadCrumbs";
+	this.breadCrumbs = breadCrumbs;
+	fileSelector.parentNode.children[0].children[0].appendChild(breadCrumbs);
 		fileSelector.parentNode.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 		fileSelector.parentNode.children[0].setAttribute("ondblclick","toggleDialog(event);");
 	var globalThis = this;
@@ -308,6 +329,8 @@ function GoogleDialog(id){ //JavaScript class
 	this.fileNames = [];
 	this.selectedFiles = [];
 	this.currentParent = "";
+	this.currentLevel = "root";
+	this.path = [["root","root"]]; //2D array of folder names and id's (in that order)
 	$(searchBar).autocomplete({
 		"source": globalThis.fileNames
 	});
@@ -340,7 +363,7 @@ function GoogleDialog(id){ //JavaScript class
 				case "application/vnd.google-apps.folder": //If its a folder
 					fileThumb.src = "images/folder.png";
 					fileOption.className += " fileOptionFolder";
-					fileOption.setAttribute("ondblclick","openFolder(event)");
+					fileOption.setAttribute("ondblclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].openFolder('"+fileObj.id+"','"+fileObj.name+"');");
 
 				break;
 
@@ -365,20 +388,42 @@ function GoogleDialog(id){ //JavaScript class
 	}
 	this.handleResponse = function(resp) {
 		var files = resp.files;
-		console.info(files);
-		if (files && files.length > 0) {
-			for(var fileNum = 0; fileNum < files.length; fileNum++){
-				var file = files[fileNum];
-				var newTile = globalThis.createGoogleTile(file);
-				globalThis.fileNames.push(file.name); //Create a running list of file names (for search bar)
-				globalThis.fileOptions.push(newTile); //Create a running list of the loaded tiles
-			}	
-			loadNextImage(); //This function is self recurring
+		if(typeof resp.error === "undefined"){
+			console.info(files);
+			if (files && files.length > 0) {
+				for(var fileNum = 0; fileNum < files.length; fileNum++){
+					var file = files[fileNum];
+					var newTile = globalThis.createGoogleTile(file);
+					globalThis.fileNames.push(file.name); //Create a running list of file names (for search bar)
+					globalThis.fileOptions.push(newTile); //Create a running list of the loaded tiles
+				}	
+				loadNextImage(); //This function is self recurring
+			}
+		}
+		else{
+			globalThis.loadError(resp);
 		}
 	};
 	this.loadFileSelections = function(req){
-		var request = gapi.client.drive.files.list(req);
-		request.execute(globalThis.handleResponse);
+		var request;
+		var success = false;
+		try{
+			request = gapi.client.drive.files.list(req);
+			success = true;
+		}
+		catch(e){
+			success = false;
+		}
+		if(success){
+			request.execute(globalThis.handleResponse);
+		}
+		else{
+			var resp = {
+				error: true,
+				message: "<p class='dialogError'>There was an error loading your Google Drive files. Click here to <a onclick='var dialogIndex = findDialog(\""+id+"\",\"googledrive\"); openDialogs[dialogIndex].clear(); openDialogs[dialogIndex].loadFileSelections();'>refresh the Google Drive dialog.</a></p>"
+			}
+			globalThis.handleResponse(resp);
+		}
 	}
 	this.updateOpenFileButton = function(numFiles){
 		if(globalThis.numFiles == undefined){
@@ -388,16 +433,8 @@ function GoogleDialog(id){ //JavaScript class
 
 	}
 	this.searchFile = function(query){
-		var request = {
-				//"pageSize": 10,
-			"corpus": "user",
-			"spaces": "drive",
-			"quotaUser": createString(5),
-			"q": "'root' in parents and name contains '" + query + "'", //Search query
-			"orderBy": "name",
-			"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
-			//Others include: webViewLink, webContentLink, nextPageToken
-		};
+		var request = standardRequest;
+		request.q = "'root' in parents and name contains '" + query + "'", //Search query
 		globalThis.clearFileSelections();
 		globalThis.loadFileSelections(request);
 	}
@@ -407,7 +444,61 @@ function GoogleDialog(id){ //JavaScript class
 		//ID ERROR
 		globalThis.file.innerHTML = "";
 	}
-	
+	this.openFolder = function(folderId, folderName, folderIndex){
+		if(typeof folderName !== "undefined"){ //If the folderName parameter is given
+			if(typeof folderIndex !== "undefined"){ //Means openFolder() was called by a breadcrumb
+				globalThis.path.splice(folderIndex+1,globalThis.path.length-1);
+				globalThis.refreshBreadCrumbs();
+				
+			}
+			else{ //If there are only 2 parameters (this happens when going up 1 folder)
+				globalThis.path.push([folderName,folderId]);
+			}
+			
+		}
+		else{ //This is the case when the path is going up a folder
+			globalThis.path.pop();
+		}
+		globalThis.refreshBreadCrumbs();
+		var request = standardRequest;
+		request.q = "'"+folderId+"' in parents";
+		globalThis.clearFileSelections();
+		globalThis.loadFileSelections(request);
+		globalThis.currentParent = globalThis.currentLevel;
+		globalThis.currentLevel = folderId;
+		if(globalThis.currentLevel==="root"){
+			$(globalThis.upButton).button("disable");
+		}
+		else{
+			$(globalThis.upButton).button("enable");
+		}
+	}
+	this.upLevel = function(){
+		if(globalThis.currentLevel !== "root"){
+			globalThis.openFolder(globalThis.currentParent);
+			if(globalThis.currentLevel==="root"){
+				$(globalThis.upButton).button("disable");
+			}
+		}
+	}
+	this.refreshBreadCrumbs = function(){
+		globalThis.breadCrumbs.innerHTML = "Google Drive";
+		for(var pathNum = 0; pathNum < globalThis.path.length; pathNum++){
+			globalThis.breadCrumbs.innerHTML += "/";
+			var newLink = document.createElement("A");
+			newLink.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].openFolder('"+globalThis.path[pathNum][1]+"','"+globalThis.path[pathNum][0]+"',"+String(pathNum)+");");
+			newLink.innerHTML = globalThis.path[pathNum][0];
+			globalThis.breadCrumbs.appendChild(newLink);
+			
+		}
+	}
+	this.refreshBreadCrumbs(); //Initialize the breadcrumbs
+	this.loadError = function(err){
+		globalThis.file.innerHTML = err.message;
+	}
+	this.clear = function(){
+		globalThis.file.innerHTML = "";
+	}
 }
 function findDialog(id, service){
 	var index = -1;
@@ -439,7 +530,7 @@ function loadNextImage(){
 		imageLoading = true;
 		elem.setAttribute("onload","imageLoading = false;loadNextImage();");
 		
-		elem.setAttribute("onerror","this.src='images/brokenFile.png';imageLoading = false;loadNextImage();");
+		elem.setAttribute("onerror","this.src='images/brokenLink.png';imageLoading = false;loadNextImage();");
 		var src = imageQue[0][1];
 		elem.src = src;
 		elem.alt = src;

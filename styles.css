@@ -159,9 +159,6 @@ button {
 	float: left;
 	margin: 12px 12px 20px 0;
 }
-#fileSearchBar{
-	height: 100%;
-}
 .ui-autocomplete {
 	max-height: 100px;
 	overflow-y: auto;
@@ -171,6 +168,39 @@ button {
 	z-index: 3;
 }
 .fileSearchBar{
+	margin-left: 8.666px;
+	margin-right: 5px;
+	height: 24px;
+	position: relative;
+	top: 2px;
+	font-size: 18px;
+	padding: 0;
+}
+.dropboxOpenFiles, .driveOpenFiles{
 	margin-left: 10px;
-	margin-right: 10px;
+}
+.dropboxSearchButton, .driveSearchButton{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+.driveUpButton, .dropboxUpButton{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+.breadCrumbs{
+	font-size: 14px;
+	margin: 0;
+	margin-left: 5px;
+	margin-right: 5px;
+	display: inline-block;
+}
+.breadCrumbs a, .dialogError a{
+	cursor: pointer;
+	text-decoration: underline;
+}
+.breadCrumbs a:hover, .dialogError a:hover{
+	text-decoration: none;
+}
+.dialogError{
+	text-align: center;
 }

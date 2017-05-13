@@ -57,19 +57,19 @@
 	<div id="tabHolder">
 		<!-- GOOGLE DRIVE TAB -->
         <div class="tab" id="driveTab" data-open="false">
-			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Log In</button>
+			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Login</button>
 <!--			<div class="g-signin2" data-onsuccess="onSignin"></div>-->
 <!--			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>-->
 			<button id="driveLogout" class="tabButton" onclick="driveLogout();">Logout</button>
-			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File</button>
+			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File/s</button>
 			<div class="tabIconHolder" id="driveTabHolder"><img class="tabIcon" id="driveIcon" src="images/product128.png" /></div>
 <!--            <img class="tabIcon" src="images/product128.png" />-->
         </div>
 		<!-- DROPBOX TAB -->
 		<div class="tab" id="dropboxTab" data-open="false">
-			<button id="dropboxLogin" onclick="dropboxLogin(this);" class="tabButton">Log In</button>
+			<button id="dropboxLogin" onclick="dropboxLogin(this);" class="tabButton">Login</button>
 			<button id="dropboxLogout" onclick="dropboxLogout();" class="tabButton">Logout</button>
-			<button id="dropboxSelectFile" class="tabButton" onclick="previewDropboxFiles();">Select File</button>
+			<button id="dropboxSelectFile" class="tabButton" onclick="previewDropboxFiles();">Open File/s</button>
 			<div class="iconTabHolder" id="dropboxTabHolder">
 				<img class="tabIcon" id="dropboxIcon" src="images/drop.png" />
 			</div>

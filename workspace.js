@@ -129,10 +129,10 @@ function createTile(name,type,contentLink,service){
 	switch(type){
 		case "doc":
 		case "docx":
-			bgImg = "../images/docBg.png";
+	//		bgImg = "../images/docBg.png";
 		break;
 	}
-	contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
+	//contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
 	contentHolder.parentElement.parentElement.children[0].children[1].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 	contentHolder.parentElement.parentElement.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 }

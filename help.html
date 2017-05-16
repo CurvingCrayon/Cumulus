@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="generalStyles.css" />
+	<link rel="stylesheet" type="text/css" href="creditStyles.css" />
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+	<script src="jquery-3.1.1.min.js"></script>
+	<script src="../res/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="credits.js"></script>
+</head>
+<body onload="createList();addListeners();">
+	<div id="holder">
+		<h1>User Manual</h1>
+		<div class="creditItem">
+			<h2>Introduction</h2>
+			<p>Cumulus Note Consolidator allows for integration of documents and files from the three most popular cloud storage services: Google Drive, Dropbox, and OneDrive, as well as the integration of the user&#39;s local files. Each and any of these services can be logged in and out of at any time the user pleases, though it should be noted that the user will not be able to access files from a service they have logged out of. Opening a file consists of the following steps:
+				<ol>
+			<li><a href="#Logging_In">Logging in to the appropriate service</a></li>
+			<li><a href="#Opening_Files">Opening a file</a></li>
+			</ol>
+			</p>
+		</div>
+		<div class="creditItem">
+			<h2>Logging In</h2>
+			<img src="images/examples/login.gif" alt="How to open files" class="creditImage"/>
+			<p>To log into a cloud storage service through Cumulus, hover over the tab that contains the associated cloud storage service icon. The following is a guide to which icon matches which cloud storage service:
+			<ul>
+			<li><img class="smallIcon" src="images/product128.png" />Google Drive</li>
+			<li><img class="smallIcon" src="images/drop.png" />Dropbox</li>
+			<li><img class="smallIcon" src="images/driveCloud.png" />OneDrive</li>
+			</ul>
+			Hovering over the chosen tab will cause it to drop down, revealing a &quot;Login&quot; button. If the &quot;Logout&quot; and &quot;Open File&quot; buttons are seen, this means you are already logged in. To log in, click the &quot;Login&quot; button. This will cause a login dialog to appear on this screen. You may notice that this popup is from the official website of the cloud storage service, meaning that logging in is secured with HTTPS. Cumulus never sees any of your account passwords - they are passed straight to the cloud storage services.
+If you do not have an account for the associated cloud storage service, an account can be created through the dialog by following the appropriate links.
+If your login details are correct, and the login is successful, the dialog will close automatically after a small loading time, and the associated tab will be outlined in blue to indicate that the service has successfully been logged into.
+</p>
+		</div>
+		<div class="creditItem">
+			<h2>Opening Files</h2>
+			<img src="images/examples/open.gif" alt="How to open files" class="creditImage"/>
+			<p>To open a file from a cloud storage service, hover the cursor over the associated cloud storage service tab. This will cause the tab to drop down, from which the &quot;Open File&quot; button can be clicked. If the &quot;Open File/s&quot; button cannot be found, the service must be logged in first. Clicking the &quot;Open File/s&quot; button will cause the &quot;Select File/s&quot; dialog to appear, from which a file, or multiple files, can be selected to open. </p>
+    </div>
+		<div class="creditItem">
+			<h2>Selecting</h2>
+			<img src="images/examples/select.gif" alt="How to open files" class="creditImage"/>
+			<p>To select a file, click on the file name or image. This will cause the file to be highlighted orange. To select multiple files, a single file can be clicked, then additional files can be selected by holding the &quot;control&quot; key in Windows, or the &quot;command&quot; key on Mac whilst clicking. A group of consecutive files can be selected by clicking on the first file, then holding the &quot;shift&quot; whilst clicking on the last file in the group. Clicking on blank space inside the dialog will deselect all files. These controls are very similar to those used in Windows&#39; &quot;File Explorer&quot;, and OSX&#39; &quot;Finder&quot; programs. If a folder is selected, all the files contained in that folder will also be selected.</p>
+		</div>
+		<div class="creditItem">
+			<h2>Searching</h2>
+			<p>The search bar can be used to narrow down file options by clicking and typing a search query and hitting the &quot;enter&quot; key. Any files with names containing the search query will be displayed. To revert back to viewing all files, remove the search query from the search bar and hit the &quot;enter&quot; key.</p>
+		</div>
+		<div class="creditItem">
+			<h2>Navigating</h2>
+			<p>Folders within cloud storage services will appear using a folder icon. Double-clicking on it will open the folder and show the contents of it. The folder path, also known as breadcrumbs, will appear at the top of the dialog. Entering folders within folders will increase the length of this breadcrumb trail, but individual breadcrumbs can be clicked to quickly navigate to a specific parent folder. The &quot;go up a level&quot; button can also be clicked to go up to the parent of the currently opened folder. </p>
+		</div>
+		
+	</div>
+	<div id="sidebar">
+	<h3>Contents</h3>
+		<div id="contents">
+		
+		</div>
+	</div>
+	
+	
+</body>
+</html>

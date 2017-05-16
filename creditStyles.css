@@ -70,3 +70,14 @@ h5 a{
 	width: 100%;
 	height: auto;
 }
+
+
+
+#head {
+	text-align: center;
+}
+/*test*/
+
+.smallIcon {
+	width: 64px;
+}

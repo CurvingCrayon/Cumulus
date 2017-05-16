@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+	
 	<link rel="stylesheet" type="text/css" href="generalStyles.css" />
 	<link rel="stylesheet" type="text/css" href="creditStyles.css" />
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
-	
+	<link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+	<script src="jquery-3.1.1.min.js"></script>
+	<script src="../res/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="credits.js"></script>
 </head>
-<body onload="createList();">
+<body onload="createList();addListeners();">
+	<h1 id="head">Credits List</h1>
 	<div id="holder">
 		<h1>Images/Graphics</h1>
 		<div class="creditItem">

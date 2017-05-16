@@ -420,7 +420,7 @@ function GoogleDialog(id){ //JavaScript class
 		else{
 			var resp = {
 				error: true,
-				message: "<p class='dialogError'>There was an error loading your Google Drive files. Click here to <a onclick='var dialogIndex = findDialog(\""+id+"\",\"googledrive\"); openDialogs[dialogIndex].clear(); openDialogs[dialogIndex].loadFileSelections();'>refresh the Google Drive dialog.</a></p>"
+				message: "<p class='dialogError'>There was an error loading your Google Drive files. Click here to <a onclick='var dialogIndex = findDialog(\""+id+"\",\"googledrive\"); openDialogs[dialogIndex].clear(); openDialogs[dialogIndex].loadFileSelections(standardRequest);'>refresh the Google Drive dialog.</a></p>"
 			}
 			globalThis.handleResponse(resp);
 		}

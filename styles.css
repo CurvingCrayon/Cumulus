@@ -204,3 +204,8 @@ button {
 .dialogError{
 	text-align: center;
 }
+.grouper{
+	height: 200px;
+	width: 200px;
+	background-color: gray;
+}

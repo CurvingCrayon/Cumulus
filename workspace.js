@@ -26,7 +26,7 @@ function createTile(name,type,contentLink,service){
 	$(tile).dialog({
 		
 	});
-	
+	tile.parentNode.className += " fileTile";
 	//Content rendering:
 	var contentHolder = document.createElement("DIV");
 	contentHolder.className = "contentHolder";

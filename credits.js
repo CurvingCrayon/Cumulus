@@ -1,4 +1,5 @@
 var creditItem = "creditItem"; //The class name of creditItems
+var creditImage = "creditImage";
 function createList(){
 	var contents = document.getElementById("contents");
 	for(var elem = 0; elem < document.getElementById("holder").children.length; elem++){
@@ -25,5 +26,26 @@ function createList(){
 	}
 	for(var h2 = 0; h2 < document.getElementsByTagName("h2").length; h2++){
 		
+	}
+}
+function toggleImage(event){
+	var targ = event.target;
+	if(targ.getAttribute("data-open") === "false"){
+		targ.style.maxHeight = "none";
+		targ.setAttribute("data-open","true");
+	}
+	else{
+		targ.style.maxHeight = "128px";
+		targ.setAttribute("data-open","false");
+	}
+	
+}
+function addListeners(){
+	for(var elem = 0; elem < document.getElementsByClassName(creditImage).length; elem++){
+		var current = document.getElementsByClassName(creditImage)[elem];
+		current.setAttribute("data-open","false");
+		current.setAttribute("ondblclick","toggleImage(event)");
+		current.title = "Double click to enlarge.";
+		$(current).tooltip();
 	}
 }

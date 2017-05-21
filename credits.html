@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+	
 	<link rel="stylesheet" type="text/css" href="generalStyles.css" />
 	<link rel="stylesheet" type="text/css" href="creditStyles.css" />
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
-	
+	<link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+	<script src="jquery-3.1.1.min.js"></script>
+	<script src="../res/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="credits.js"></script>
 </head>
-<body onload="createList();">
+<body onload="createList();addListeners();">
+	<h1 id="head">Credits List</h1>
 	<div id="holder">
 		<h1>Images/Graphics</h1>
 		<div class="creditItem">
@@ -29,6 +33,11 @@
 			<h2>Broken File Icon</h2>
 			<img src="images/brokenFile.png" alt="Broken File" class="creditImage" />
 			<p>Icon made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>. Licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></p>
+		</div>
+		<div class="creditItem">
+			<h2>Broken Link Icon</h2>
+			<img src="images/brokenLink.png" alt="Broken Link" class="creditImage" />
+			<p>Icons made by <a href="http://www.flaticon.com/authors/madebyoliver" title="Madebyoliver">Madebyoliver</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>. Licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></p>
 		</div>
 		<h1>API's</h1>
 		<div class="creditItem">

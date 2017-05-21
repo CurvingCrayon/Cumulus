@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 	<!--SCRIPTS-->
 
 	<link rel="stylesheet" type="text/css" href="styles.css" />
@@ -17,6 +16,7 @@
 	<script type="text/javascript" src="box.js"></script>
 	<script type="text/javascript" src="onedrive.js"></script>
 	<script type="text/javascript" src="workspace.js"></script>
+	<script type="text/javascript" src="grouper.js"></script>
 
 <!--GOOGLE-->
 	<script src="https://apis.google.com/js/client:platform.js" async defer></script>
@@ -32,12 +32,15 @@
 	<script type="text/javascript" src="https://js.live.net/v7.0/OneDrive.js"></script>
 	
 		<!--PDF RENDERER-->
-		<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+		<script type="text/javascript" src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
 		
+		<!--MIME TYPES-->
+		<script type="text/javascript" src="mimetypes.js"></script>
+	
 		
 </head>
 <body oncontextmenu="//menu(event);" onclick="checkClick(event);">
-	
+	<input type="file" onchange="handleFile(event)" />
 	<ul id="driveFileMenu">
 		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
@@ -54,19 +57,19 @@
 	<div id="tabHolder">
 		<!-- GOOGLE DRIVE TAB -->
         <div class="tab" id="driveTab" data-open="false">
-			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Log In</button>
+			<button id="driveAuth" class="tabButton" onclick="handleAuthClick(event)" data-onsuccess="onSignIn">Login</button>
 <!--			<div class="g-signin2" data-onsuccess="onSignin"></div>-->
 <!--			<button id="driveLogout" class="tabButton" onclick="window.open('https://accounts.google.com/logout','');$('#driveAuth').show();$(this).hide();">Logout</button>-->
 			<button id="driveLogout" class="tabButton" onclick="driveLogout();">Logout</button>
-			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File</button>
+			<button id="driveSelectFile" class="tabButton" onclick="previewDriveFiles();">Open File/s</button>
 			<div class="tabIconHolder" id="driveTabHolder"><img class="tabIcon" id="driveIcon" src="images/product128.png" /></div>
 <!--            <img class="tabIcon" src="images/product128.png" />-->
         </div>
 		<!-- DROPBOX TAB -->
 		<div class="tab" id="dropboxTab" data-open="false">
-			<button id="dropboxLogin" onclick="dropboxLogin(this);" class="tabButton">Log In</button>
+			<button id="dropboxLogin" onclick="dropboxLogin(this);" class="tabButton">Login</button>
 			<button id="dropboxLogout" onclick="dropboxLogout();" class="tabButton">Logout</button>
-			<button id="dropboxSelectFile" class="tabButton" onclick="previewDropboxFiles();">Select File</button>
+			<button id="dropboxSelectFile" class="tabButton" onclick="previewDropboxFiles();">Open File/s</button>
 			<div class="iconTabHolder" id="dropboxTabHolder">
 				<img class="tabIcon" id="dropboxIcon" src="images/drop.png" />
 			</div>
@@ -78,7 +81,11 @@
             <img class="tabIcon" src="images/driveCloud.png" />
         </div>
     </div>
+		<object data="/testDocuments/document.pdf" type="application/pdf">
+			<embed src="/testDocuments/document.pdf" type="application/pdf" />
+		</object>
 	
+<canvas id="the-canvas"></canvas>
 	<div id="notifier">
 		<div id="noteHolder">
 			

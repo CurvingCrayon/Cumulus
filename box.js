@@ -144,24 +144,42 @@ function DropboxDialog(id){
 	//Open Selected Files Button
 	var openFiles = document.createElement("BUTTON");
 	openFiles.innerHTML = "Open File(s)"
-	openFiles.class = "dropboxOpenFiles";
+	
 	openFiles.setAttribute("onclick","openSelectedDropboxFiles(event);");
 	$(openFiles).button();
+	openFiles.className += " dropboxOpenFiles";
 	fileSelector.parentNode.children[0].children[0].appendChild(openFiles);
 	//Search Bar
 	var searchBar = document.createElement("INPUT");
 	searchBar.type = "text";
 	searchBar.className = "fileSearchBar";
-	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"',dropbox); openDialogs[dialogIndex].searchFile(this.value);}");
+	searchBar.setAttribute("onkeypress","if(checkEnter(event)){var dialogIndex = findDialog('"+id+"','dropbox'); openDropboxDialogs[dialogIndex].searchFile(this.value);}");
 	searchBar.setAttribute("onmousedown","event.stopPropagation();"); //Stops dragging from the searchbar
-	searchBar.placeholder = "Search for file..."
+	searchBar.setAttribute("ondblclick","event.stopPropagation();"); //Stops collapsing from the searchbar
+	searchBar.placeholder = "Search for file...";
 	fileSelector.parentNode.children[0].children[0].appendChild(searchBar);
 	
 	var searchButton = document.createElement("BUTTON");
-//ID ERROR	//searchButton.setAttribute("onclick","searchFile(document.getElementById('fileSearchBar')).value");
+	searchButton.innerHTML = "Search";
+	searchButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','dropbox'); openDropboxDialogs[dialogIndex].searchFile(this.value);");
+	$(searchButton).button({
+		"icon": "ui-icon-search"
+	});
+	searchButton.className += " dropboxSearchButton";
+	fileSelector.parentNode.children[0].children[0].appendChild(searchButton);
 	
-		fileSelector.parentNode.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
-		fileSelector.parentNode.setAttribute("ondblclick","toggleDialog(event);");
+	var upButton = document.createElement("BUTTON");
+	upButton.innerHTML = "Go Up A Level";
+	upButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','dropbox'); openDropboxDialogs[dialogIndex].upLevel();");
+	$(upButton).button({
+		"icon": "ui-icon-arrowreturnthick-1-n",
+		"disabled": "true"
+	});
+	upButton.className += " dropboxUpButton";
+	fileSelector.parentNode.children[0].children[0].appendChild(upButton);
+	this.upButton = upButton;
+		fileSelector.parentNode.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+		fileSelector.parentNode.children[0].setAttribute("ondblclick","toggleDialog(event);");
 	var globalThis = this;
 	this.id = id;
 	this.file = fileSelector;
@@ -171,7 +189,9 @@ function DropboxDialog(id){
 	this.fileOptions = [];
 	this.fileNames = [];
 	this.selectedFiles = [];
-	
+	this.currentParent = "";
+	this.currentLevel = "root";
+	this.path = ["root"];
 	$(searchBar).autocomplete({
 		"source": globalThis.fileNames
 	});
@@ -194,9 +214,12 @@ function DropboxDialog(id){
 		if(fileObj[".tag"] === "folder"){
 			fileOption.setAttribute("data-mimetype","folder");
 			fileOption.className += " fileOptionFolder";
+			fileOption.setAttribute("ondblclick","var dialogIndex = findDialog('"+id+"','dropbox'); openDropboxDialogs[dialogIndex].openFolder('"+fileObj.path_lower+"','"+fileObj.name+"');");
+
 		}
 		else{
 			fileOption.setAttribute("data-mimetype",fileName.split(".")[fileName.split(".").length-1]);
+			fileOption.setAttribute("ondblclick","refreshImage(event);");
 
 		}
 		fileOption.setAttribute("data-name",fileName.split(".")[0]);
@@ -229,30 +252,34 @@ function DropboxDialog(id){
 		fileName.className = "fileOptionName";
 		fileName.innerHTML = fileObj.name;
 		fileOption.onclick = fileClicked;
-		fileOption.ondblclick = openFolder;
 		fileOption.appendChild(fileThumb);
 		fileOption.appendChild(fileName);
 		globalThis.file.append(fileOption);
+		return fileOption;
 	}
 	this.handleResponse = function(resp) {
 		console.log(resp);
-		var files = resp.entries;
+		var files = (resp.entries || resp.matches); //Allows for search responses
 		for(var fileNum = 0; fileNum < files.length; fileNum++){
-			if(files[fileNum][".tag"] !== "folder"){
-				var path = resp.entries[fileNum].path_lower;
+			var newTile;
+			var file = files[fileNum].metadata || files[fileNum];
+			if(file[".tag"] !== "folder"){
+				var path = file.path_lower;
+				console.info(file);
 				dropbox("files/get_temporary_link",{"path":path},function(resp){
 					resp.metadata.viewLink = resp.link;
 					var expiryTime = new Date();
 					expiryTime.setTime(expiryTime.valueOf() + 12600000);
 					resp.metadata.linkExpiry = expiryTime;
-					globalThis.createDropboxTile(resp.metadata);
+					newTile = globalThis.createDropboxTile(resp.metadata);
 				});
 			}
 			else{
-				files[fileNum].viewLink = "";
-				files[fileNum].linkExpiry = "";
-				globalThis.createDropboxTile(files[fileNum]);	
+				file.viewLink = "";
+				file.linkExpiry = "";
+				newTile = globalThis.createDropboxTile(file);	
 			}
+			globalThis.fileOptions.push(newTile);
 		}
 	};
 	this.loadFileSelections = function(path){
@@ -271,14 +298,45 @@ function DropboxDialog(id){
 
 	}
 	this.searchFile = function(query){
-	
+		globalThis.clearFileSelections();
+		$(globalThis.upButton).button("disable");
+		dropbox("files/search",{
+				"path": "",
+				"query":query
+			},
+			globalThis.handleResponse
+		);
 	}
 
 	this.clearFileSelections = function(){ //Clears all the files from the file selector dialog
 		globalThis.fileNames = [];
 		globalThis.file.innerHTML = "";
 	}
-	
+	this.openFolder = function(folderPath,folderName){
+		if(typeof folderName !== "undefined"){ //If the folderName parameter is given
+			globalThis.path.push(folderName);
+		}
+		else{ //This is the case when the path is going up a folder
+			globalThis.path.pop();
+		}
+		globalThis.clearFileSelections();
+		$(globalThis.upButton).button("enable");
+		if(folderPath === "root"){
+			folderPath = "";
+			$(globalThis.upButton).button("disable");
+		}
+		dropbox("files/list_folder",{
+				"path": folderPath,
+			},
+			globalThis.handleResponse
+		);
+		globalThis.currentParent = globalThis.currentLevel;
+		globalThis.currentLevel = folderPath;
+		
+	}
+	this.upLevel = function(){
+		globalThis.openFolder(globalThis.currentParent);
+	}
 }
 function createDropboxDialog(){
 	var rand = createString(dialogStringLength);
@@ -325,7 +383,7 @@ function openSelectedDropboxFiles(event){
 			}
 			
 			//createTile(name,type,link,"dropbox");
-			createTile(name,type,"","dropbox");
+			createTile(name,type,link,"dropbox");
 		}
 	}
 	else{

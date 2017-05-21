@@ -1,34 +1,115 @@
 var menuOpen = false;
 var menuTarget = false;
 var menuIds = ["driveFileMenu"];
+var pdfType = "google"; //Let this equal iframe, object, google or library
+var drag = {
+	file: "",
+	startPos: [0,0],
+	elemStartPos: [0,0],
+	threshold: 15, //The number of pixels dragged before the element moves
+
+}
 function createTile(name,type,contentLink,service){
-	switch(type){
-		case "application/vnd.google-apps.document":
-			type = "doc";
-		break;
-			
-		case "application/vnd.google-apps.folder":
-			type = "folder";
-		break;
-			
-		case "application/vnd.google-apps.presentation":
-			type = "powerpoint";
-		break;
-			
+	//Name generation:
+	var searchedType = mimeTypes.getExtension(type); //Turn mime types into their appropriate extensions
+	if(searchedType != false){
+		type = searchedType;
 	}
 	var tile = document.createElement("DIV");
-	tile.title = name+"."+type;
+	if(service === "googledrive"){
+		tile.title = name;
+	}
+	else{
+		tile.title = name+"."+type;
+	}
+	//Create tile
 	$(tile).dialog({
 		
 	});
-	
+	tile.parentNode.className += " fileTile";
+	//Content rendering:
 	var contentHolder = document.createElement("DIV");
 	contentHolder.className = "contentHolder";
-	var contentFrame = document.createElement("IFRAME");
-	contentFrame.className = "contentFrame";
-	contentFrame.src = contentLink;
-	contentHolder.appendChild(contentFrame);
+	switch(type){ //Document-type specific rendering code
+		case "pdf":
+			var contentFrame;
+			if(pdfType === "library"){
+				contentFrame = document.createElement("CANVAS");
+				contentFrame.className = "contentFrame";
+			}
+			else if(pdfType === "iframe"){
+				contentFrame = document.createElement("IFRAME");
+				contentFrame.className = "contentFrame";
+				httpGetFile(contentLink,function(resp){
+					if(resp != false){
+						contentFrame.src = createUrl(resp,"application/pdf");
+					}
+				});
+			}
+			else if(pdfType === "object"){
+				contentFrame = document.createElement("OBJECT");
+				contentFrame.className = "contentFrame";
+				var contentSource = document.createElement("EMBED");
+				contentFrame.setAttribute("type","application/pdf");
+				contentSource.setAttribute("type","application/pdf");
+				httpGetFile(contentLink,function(resp){
+					if(resp != false){
+						var link = createUrl(resp,"application/pdf");
+						contentFrame.setAttribute("data",link);
+						contentSource.src = link;
+					}
+				});
+				contentFrame.appendChild(contentSource);
+				
+			}
+			else if(pdfType === "google"){
+				if(service === "dropbox"){
+					contentFrame = document.createElement("IFRAME");
+					contentFrame.className = "contentFrame";
+					contentFrame.src = "https://docs.google.com/viewer?url="+contentLink+"&embedded=true";
+				}
+				else{
+					contentFrame = document.createElement("IFRAME");
+					contentFrame.className = "contentFrame";
+					contentFrame.src = contentLink;
+				}
+			}
+			else{
+				console.error("Invalid PDF type: " + String(pdfType));
+			}
+		break;
+			
+		case "doc":
+		case "docx":
+		case "xlsx":
+			var contentFrame;
+			if(service === "dropbox"){
+				contentFrame = document.createElement("IFRAME");
+				contentFrame.className = "contentFrame";
+				contentFrame.src = "https://docs.google.com/viewer?url="+contentLink+"&embedded=true";
+			}
+			else{
+				contentFrame = document.createElement("IFRAME");
+				contentFrame.className = "contentFrame";
+				contentFrame.src = contentLink;
+			}
+			
+		break;
+		
+		default:
+			var contentFrame = document.createElement("DIV");
+			
+	}
+	console.info(type);
+//	var contentFrame = document.createElement("IFRAME");
+//	contentFrame.className = "contentFrame";
+//	contentFrame.src = contentLink;
 	tile.appendChild(contentHolder);
+	contentHolder.appendChild(contentFrame);
+	if(pdfType === "library" && type === "pdf"){
+		createPdf(contentLink,contentFrame); //Used for PDFJS
+	}
+	//Icon selection:
 	var icon = document.createElement("IMG");
 	icon.className = "fileIcon";
 	switch(service){
@@ -48,12 +129,12 @@ function createTile(name,type,contentLink,service){
 	switch(type){
 		case "doc":
 		case "docx":
-			bgImg = "../images/docBg.png";
+	//		bgImg = "../images/docBg.png";
 		break;
 	}
-	contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
-	contentHolder.parentElement.parentElement.children[0].children[0].setAttribute("ondblclick","if(checkTarget(event){toggleDialog(event);}");
-	contentHolder.parentElement.parentElement.children[0].setAttribute("ondblclick","if(checkTarget(event){toggleDialog(event);}");
+	//contentHolder.parentElement.parentElement.style.backgroundImage = "url('"+bgImg+"')";
+	contentHolder.parentElement.parentElement.children[0].children[1].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
+	contentHolder.parentElement.parentElement.children[0].setAttribute("ondblclick","if(checkTarget(event)){toggleDialog(event);}");
 }
 function menu(event){
 	targ = event.target;
@@ -98,4 +179,27 @@ function checkClick(event){
 		}
 	}
 
+}
+function createPdf(src,elem){
+	httpGetFile(src,function(data){
+		if(data != false){
+			newUrl = createUrl(data,"application/pdf");
+			PDFJS.getDocument(newUrl).then(function(newPdf){
+				newPdf.getPage(1).then(function(newPage){
+					var scale = 1;
+					var viewport = newPage.getViewport(scale);
+					var context = elem.getContext("2d");
+					newPage.render({ 
+						canvasContext: context, 
+						viewport: viewport
+					});
+				});
+			});
+		}
+	});
+}
+function createUrl(data,type){
+	var blob = new Blob([data],{"type":"application/pdf"});
+	var newUrl = URL.createObjectURL(blob);
+	return newUrl;
 }

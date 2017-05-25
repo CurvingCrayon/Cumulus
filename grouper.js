@@ -6,8 +6,9 @@ function Grouper(id){
 	grouper.className = "grouper";
 	grouper.id = id;
 	grouper.innerHTML="<h2 class='groupHead' ondblclick='changeTitle(event)'>New Group</h2>";
+	grouper.style.position = "absolute";
 	grouper.style.top = "0px";
-	grouper.style.left = String(document.body.offsetWidth/2)+"px";
+	grouper.style.right = "100px";
 	/*$(grouper).dialog({
 	"width": ($("body").width() * 0.2),
 	"height": ($("body").height() * 0.2),
@@ -70,7 +71,8 @@ function Grouper(id){
 	$(grouper).resizable();
 	$(grouper).draggable({
 		"drag": globalThis.moveChildren,
-		"create": globalThis.initGroup
+		"create": globalThis.initGroup,
+		"stack": ".grouper"
 	});
 	this.files = [];
 	this.pos = [0,0];

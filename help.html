@@ -9,7 +9,7 @@
 	<script src="../res/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="credits.js"></script>
 </head>
-<body onload="createList();addListeners();">
+<body onload="createList();addListeners();$('.footerElem').button();">
 	<div id="holder">
 		<h1>User Manual</h1>
 		<div class="creditItem">
@@ -47,13 +47,23 @@ If your login details are correct, and the login is successful, the dialog will 
 		</div>
 		<div class="creditItem">
 			<h2>Searching</h2>
+			<img src="images/examples/search.gif" alt="How to open files" class="creditImage"/>
 			<p>The search bar can be used to narrow down file options by clicking and typing a search query and hitting the &quot;enter&quot; key. Any files with names containing the search query will be displayed. To revert back to viewing all files, remove the search query from the search bar and hit the &quot;enter&quot; key.</p>
 		</div>
 		<div class="creditItem">
 			<h2>Navigating</h2>
 			<p>Folders within cloud storage services will appear using a folder icon. Double-clicking on it will open the folder and show the contents of it. The folder path, also known as breadcrumbs, will appear at the top of the dialog. Entering folders within folders will increase the length of this breadcrumb trail, but individual breadcrumbs can be clicked to quickly navigate to a specific parent folder. The &quot;go up a level&quot; button can also be clicked to go up to the parent of the currently opened folder. </p>
 		</div>
-		
+	<div class="creditItem">
+		<h2>Organising</h2>
+		<img src="images/examples/rename.gif" alt="How to open files" class="creditImage"/>
+		<p>To organise files a tool called a "grouper" can be used. A grouper allows the user to group files together, and keep them together, under a name of their choosing. To create a grouper, hover over the grouper tab at the top right corner, and select "new grouper". This will create a new grouper with the name "New Group" and a random colour. To change the name of the group, double click on the name. This will cause a dialog to pop up, entering the new name then hitting "ok" will change the name of the grouper. The grouper can be resized by dragging the indicators at the bottom right corner of the grouper, or by dragging on any of the borders. <br/>
+			<img src="images/examples/grouping.gif" alt="How to open files" class="creditImage"/><br/>
+To group files together, simply drag and drop files onto the grouper. A file is grouped when its colour matches that of the grouper. When files are attached to the grouper, they are automatically moved with the grouper. To detach a file from the grouper, simply drag it out of the grouper, until it is white again.</p>
+	</div>
+	
+	<div id="spacer">
+	</div>
 	</div>
 	<div id="sidebar">
 	<h3>Contents</h3>
@@ -61,7 +71,15 @@ If your login details are correct, and the login is successful, the dialog will 
 		
 		</div>
 	</div>
-	
+	<div id="footer">
+		<h3>Website design and code by Hayden Keers.</h3>
+		<a href="index.html"><div class="footerElem">
+			<h4>Home</h4>
+		</div></a>
+		<a href="credits.html"><div class="footerElem">
+			<h4>Credits</h4>
+		</div></a>
+	</div>
 	
 </body>
 </html>

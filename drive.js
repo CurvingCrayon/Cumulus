@@ -1,14 +1,6 @@
-// The Browser API key obtained from the Google Developers Console.
-// Replace with your own Browser API key, or your own key.
 var developerKey = "AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0";
-
-// The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
 var CLIENT_ID= "905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercontent.com";
-
-// Replace with your own App ID. (Its the first number in your Client ID)
 var appId = "905474582382";
-
-// Scope to use to access user's Drive items.
 var SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/plus.login","https://www.googleapis.com/auth/plus.me"];
 
 
@@ -40,7 +32,8 @@ gapi.auth.authorize(
   {
 	"client_id": CLIENT_ID,
 	"scope": SCOPES.join(" "),
-	"immediate": true
+	"immediate": true,
+	  "promt": "login"
   }, handleAuthResult);
 }
 
@@ -63,6 +56,7 @@ function driveLogout(){
 	$("#driveProfilePic").remove();
 	$("#driveTab").css(inactiveTabStyle());
 	googleInfo = {};
+	window.open("http://accounts.google.com/logout","_blank");
 }
 function handleAuthResult(authResult) {
 	
@@ -295,7 +289,7 @@ function GoogleDialog(id){ //JavaScript class
 	
 	var searchButton = document.createElement("BUTTON");
 	searchButton.innerHTML = "Search";
-	searchButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].searchFile(this.value);");
+	searchButton.setAttribute("onclick","var dialogIndex = findDialog('"+id+"','googledrive'); openDialogs[dialogIndex].searchFile(this.parentNode.children[1].value);");
 	$(searchButton).button({
 		"icon": "ui-icon-search"
 	});

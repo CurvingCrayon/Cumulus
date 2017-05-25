@@ -10,6 +10,7 @@ $(function(){
 	$("#dropboxSelectFile").button("disable"); //Disables dropbox open file button
 	$("#driveFileMenu").menu();
 	$("#driveFileMenu").hide();
+	$(".footerElem").button();
 	$("#fileSelector").dialog({ //Defines ID as jquery UI object
 		"width": ($("body").width() * 0.8),
 		"height": ($("body").height() * 0.8),

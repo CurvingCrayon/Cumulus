@@ -40,7 +40,7 @@
 		
 </head>
 <body oncontextmenu="//menu(event);" onclick="checkClick(event);">
-	<input type="file" onchange="handleFile(event)" />
+<!--	<input type="file" onchange="handleFile(event)" />-->
 	<ul id="driveFileMenu">
 		<li onclick="confirmDelete(deleteFile);"><div><span class="ui-icon ui-icon-trash"></span>Delete</div></li>
 		<li><div>Selection Options</div><ul>
@@ -76,21 +76,36 @@
         </div>
 		<!-- ONEDRIVE TAB -->
 		<div class="tab" id="onedriveTab" data-open="false">
-			<button class="tabButton" onClick="launchOneDrivePicker()">Open from OneDrive</button>
+			<button class="tabButton" onclick="launchOneDrivePicker()">Open from OneDrive</button>
 			
             <img class="tabIcon" src="images/driveCloud.png" />
         </div>
     </div>
+	<div id="header">
+		<img id="headerImage" src="images/banner.png" alt="Cumulus Note Consolidator" />
+	</div>
+	<div id="tools">
+		<div class="tab" id="toolTab" data-open="false">
+			<button class="tabButton" onclick="openGroupers.push(new Grouper());">
+			New Grouper
+			</button>
+			<img class="tabIcon" src="images/layers.png" />
+		</div>
+	</div>
+<!--
 		<object data="/testDocuments/document.pdf" type="application/pdf">
 			<embed src="/testDocuments/document.pdf" type="application/pdf" />
 		</object>
+-->
 	
-<canvas id="the-canvas"></canvas>
+<!--<canvas id="the-canvas"></canvas>-->
+<!--
 	<div id="notifier">
 		<div id="noteHolder">
 			
 		</div>
 	</div>
+-->
 	<div class="dialog">
 		<div class="dialogBar"></div>
 		<div class="dialogContent">
@@ -100,6 +115,15 @@
 <!--	<div id="fileInput" ondragover="handleDrag(event);" ondrop="handleDrop(event);"  onclick="document.getElementById('file').click();">asdf</div>-->
 	<input type="file" id="file" onchange="handleFile(event);" multiple />
 <!--	<div class="g-signin2" data-onsuccess="onSignIn"></div>-->
+	<div id="footer">
+		<h3>Website design and code by Hayden Keers.</h3>
+		<a href="help.html"><div class="footerElem">
+			<h4>Help</h4>
+		</div></a>
+		<a href="credits.html"><div class="footerElem">
+			<h4>Credits</h4>
+		</div></a>
+	</div>
 </body>
 </html>
 <!--

@@ -1,9 +1,7 @@
-var developerKey = "AIzaSyBJQh81b7ruToo-QkSy_krwqO9ByKhIOM0";
-var CLIENT_ID= "905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercontent.com";
-var appId = "905474582382";
+//To get the client and app id go to: https://console.developers.google.com/apis/dashboard
+var CLIENT_ID = "905474582382-5kuikj9l46duojj4flfd3q2e6aogg02v.apps.googleusercontent.com";
+var appId = "905474582382"; //The app ID is just the first few numbers before the dash of the client ID
 var SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/plus.login","https://www.googleapis.com/auth/plus.me"];
-
-
 
 var googleInfo = {};
 
@@ -14,7 +12,7 @@ var openDialogs = [];
 var imageLoading = false;
 var dialogStringLength = 5;
 
-var standardRequest = {
+var standardRequest = {  //Default parameters for the Google Drive API to view files
 	//"pageSize": 10,
 	"corpus": "user",
 	"spaces": "drive",
@@ -24,48 +22,32 @@ var standardRequest = {
 	"fields": "files(id, name, iconLink, thumbnailLink, parents, mimeType,webViewLink,webContentLink,trashed)" //Defines the information returned for the files
 	//Others include: webViewLink, webContentLink, nextPageToken
  }
-
-function checkAuth() {
+function handleAuthClick(event) { //This function is called by the "login" button
+	gapi.auth.authorize({
+		client_id: CLIENT_ID, 
+		scope: SCOPES, 
+		immediate: false},
+		handleAuthResult
+	);
+	return false;
+}
+function checkAuth() { //THis is called by the API itself once it loads
+    //This essentially checks if the user is already logged in
 	console.log("Checking Google Drive auth...");
-gapi.auth.authorize(
-	
-  {
+    gapi.auth.authorize({
 	"client_id": CLIENT_ID,
 	"scope": SCOPES.join(" "),
 	"immediate": true,
-	  "promt": "login"
-  }, handleAuthResult);
-}
-
-/*function onSignIn(googleUser){
-	console.log("Signed in");
-	$(".g-signin2").hide();
-	$("#driveLogout").show();
-	$("#driveFileSelect").show();
-	var profile = googleUser.getBasicProfile();
-	console.log("ID: " + profile.getId()); // Do not send to your backend! Use an ID token instead.
-	console.log("Name: " + profile.getName());
-  	console.log("Image URL: " + profile.getImageUrl());
-	console.log("Email: " + profile.getEmail()); // This is null if the "email" scope is not present.
-}*/
-function driveLogout(){
-	gapi.auth.signOut();
-	$("#driveAuth").show();
-	$("#driveLogout").hide();
-	$("#driveSelectFile").hide();
-	$("#driveProfilePic").remove();
-	$("#driveTab").css(inactiveTabStyle());
-	googleInfo = {};
-	window.open("http://accounts.google.com/logout","_blank");
+        "prompt": "login"
+    }, handleAuthResult); //This then calls handleAuthResult
 }
 function handleAuthResult(authResult) {
-	
-	if (authResult && !authResult.error) {
+	if (authResult && !authResult.error) { //If the login is successful
 		console.groupCollapsed("Google Drive successfully authorized.");
 		console.log(authResult);
 		console.groupEnd();
-		$("#driveAuth").hide();
-		$("#driveSelectFile").show();
+		$("#driveAuth").hide(); //Hide the login button
+		$("#driveSelectFile").show(); //Show the select file button
 		$("#driveSelectFile").button("enable");
 		$("#driveLogout").show();
 		$("#driveTab").css(activeTabStyle());
@@ -81,30 +63,14 @@ function handleAuthResult(authResult) {
 		$("#driveSelectFile").hide();
 		$("#driveLogout").hide();
 	}
-	
 }
-
-function handleAuthClick(event) {
-	gapi.auth.authorize({
-		client_id: CLIENT_ID, 
-		scope: SCOPES, 
-		immediate: false},
-		handleAuthResult
-	);
-	return false;
-}
-
 function loadProfileApi(){
 	gapi.client.load("plus", "v1", initProfile);
-}
-function loadDriveApi() {
-	gapi.client.load("drive", "v3", initDrive);
 }
 function initProfile(){
 	var requestInfo = gapi.client.plus.people.get({
 		'userId' : 'me'
 	});
-
 	requestInfo.execute(function(resp) {
 		googleInfo.id = resp.id;
 		googleInfo.name = resp.displayName;
@@ -117,9 +83,26 @@ function initProfile(){
 			console.error("Signed in user has no profile URL.");
 		}
 		loadGoogleImage(googleInfo.image);
-		
 	});
 }
+function loadDriveApi() {
+	gapi.client.load("drive", "v3", initDrive);
+}
+function initDrive(){
+	$("#driveSelectFile").button("enable");
+}
+
+function driveLogout(){
+	gapi.auth.signOut(); //Sign out of the Drive API
+	$("#driveAuth").show();
+	$("#driveLogout").hide();
+	$("#driveSelectFile").hide();
+	$("#driveProfilePic").remove();
+	$("#driveTab").css(inactiveTabStyle());
+	googleInfo = {}; //Clear account information
+	window.open("http://accounts.google.com/logout","_blank");
+}
+
 function loadGoogleImage(src){
 	var newImg = document.createElement("IMG");
 	var originalImg = document.getElementById("driveIcon");
@@ -148,9 +131,7 @@ function createDialog(){
 function refreshFiles(){
 	
 }
-function initDrive(){
-	$("#driveSelectFile").button("enable");
-}
+
 
 function confirmDelete(callback){
 	var fileName = menuTarget.getAttribute("data-name");
@@ -546,3 +527,14 @@ function getFileId(url){
 function createDriveLink(id){
 	return "https://docs.google.com/viewer?srcid=" + id + "&pid=explorer&efh=false&a=v&chrome=false&embedded=true"; //Credit to Ben Bollard Schersten at http://www.benschersten.com/blog/2014/04/embedding-a-pdf-from-drive-into-a-blog/
 }
+/*function onSignIn(googleUser){
+	console.log("Signed in");
+	$(".g-signin2").hide();
+	$("#driveLogout").show();
+	$("#driveFileSelect").show();
+	var profile = googleUser.getBasicProfile();
+	console.log("ID: " + profile.getId()); // Do not send to your backend! Use an ID token instead.
+	console.log("Name: " + profile.getName());
+  	console.log("Image URL: " + profile.getImageUrl());
+	console.log("Email: " + profile.getEmail()); // This is null if the "email" scope is not present.
+}*/
